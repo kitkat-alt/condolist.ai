@@ -181,10 +181,10 @@
             cursor: pointer;
             z-index: 999;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            overflow: hidden; /* Added for image clipping */
+            overflow: hidden; 
         }
         .chat-float-btn:hover { transform: scale(1.1); }
-        .chat-float-btn img { width: 100%; height: 100%; object-fit: cover; } /* Added for bot icon */
+        .chat-float-btn img { width: 100%; height: 100%; object-fit: cover; }
         
         .chat-window {
             position: fixed;
@@ -372,7 +372,7 @@
     <!-- APP CONTAINER -->
     <div id="app" class="max-w-4xl mx-auto min-h-screen relative z-10">
 
-        <!-- FLOATING HEADER (Dynamic Island Style) -->
+        <!-- FLOATING HEADER -->
         <header class="fixed top-4 left-4 right-4 z-50 ultra-glass rounded-full px-6 py-3 flex justify-between items-center max-w-4xl mx-auto transition-all duration-300">
             <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer" onclick="app.goHome()">Condolist</h1>
             <div class="relative">
@@ -392,7 +392,6 @@
                         <a href="#" onclick="app.showAddRoom()" class="flex items-center px-4 py-3 text-gray-700 hover:bg-white/60 rounded-2xl transition">
                             <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3 text-green-600"><i class="fas fa-plus"></i></div> เพิ่มห้อง
                         </a>
-                        <!-- New AI Settings Menu -->
                         <a href="#" onclick="app.showAISettings()" class="flex items-center px-4 py-3 text-gray-700 hover:bg-white/60 rounded-2xl transition">
                             <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 text-indigo-600"><i class="fas fa-robot"></i></div> ตั้งค่า AI
                         </a>
@@ -419,8 +418,8 @@
 
         <!-- 1. PUBLIC VIEW -->
         <div id="publicView" class="px-4">
-            <!-- Profile Card -->
-            <div class="glass-card p-6 flex items-center gap-6 mb-6">
+             <!-- Profile Card -->
+             <div class="glass-card p-6 flex items-center gap-6 mb-6">
                 <div class="story-ring p-[3px] shadow-xl shrink-0">
                     <img id="profileImg" src="https://via.placeholder.com/150" class="w-20 h-20 rounded-full border-4 border-white object-cover">
                 </div>
@@ -441,35 +440,30 @@
             <!-- Filter Stories -->
             <div class="mb-6 overflow-x-auto hide-scrollbar">
                 <div class="flex space-x-6 px-2 min-w-max">
-                    <!-- Filter: All -->
-                    <div onclick="app.filter('All')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="All">
-                        <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300 filter-ring-active"> <!-- Default Active -->
+                     <div onclick="app.filter('All')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="All">
+                        <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300 filter-ring-active">
                             <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center text-xs font-bold text-gray-700 transition shadow-sm bg-white/50">ALL</div>
                         </div>
                         <span class="text-xs font-bold text-blue-600 transition">ทั้งหมด</span>
                     </div>
-                    <!-- Filter: Studio -->
-                    <div onclick="app.filter('Studio')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="Studio">
+                     <div onclick="app.filter('Studio')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="Studio">
                         <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300">
                             <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center text-xs font-medium text-gray-500 transition shadow-sm bg-white/50">Studio</div>
                         </div>
                         <span class="text-xs font-medium text-gray-500 transition">Studio</span>
                     </div>
-                    <!-- Filter: 1 Bed -->
                     <div onclick="app.filter('1BED')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="1BED">
                         <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300">
                             <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center text-xs font-medium text-gray-500 transition shadow-sm bg-white/50">1 Bed</div>
                         </div>
                         <span class="text-xs font-medium text-gray-500 transition">1 Bed</span>
                     </div>
-                    <!-- Filter: 2 Bed -->
                     <div onclick="app.filter('2BED')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="2BED">
                         <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300">
                             <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center text-xs font-medium text-gray-500 transition shadow-sm bg-white/50">2 Bed</div>
                         </div>
                         <span class="text-xs font-medium text-gray-500 transition">2 Bed</span>
                     </div>
-                    <!-- Filter: Facility -->
                      <div onclick="app.filter('Facility')" class="filter-item cursor-pointer flex flex-col items-center gap-2 group" data-type="Facility">
                         <div class="ring-wrapper p-[2px] rounded-full transition-all duration-300">
                             <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center text-lg text-gray-500 transition shadow-sm bg-white/50"><i class="fas fa-swimming-pool"></i></div>
@@ -479,12 +473,9 @@
                 </div>
             </div>
 
-            <!-- Grid Gallery (Glass Tiles) -->
-            <div id="propertyGrid" class="grid grid-cols-3 gap-1 md:gap-4 pb-24">
-                <!-- Injected via JS -->
-            </div>
-            
-             <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-gray-400">
+            <!-- Grid Gallery -->
+            <div id="propertyGrid" class="grid grid-cols-3 gap-1 md:gap-4 pb-24"></div>
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-gray-400">
                 <i class="far fa-folder-open text-4xl mb-4 opacity-50"></i>
                 <p>ไม่พบรายการ</p>
             </div>
@@ -492,7 +483,7 @@
 
         <!-- 2. ADMIN DASHBOARD -->
         <div id="adminDashboard" class="hidden px-4 pb-20">
-            <div class="glass-card p-6 mb-6">
+             <div class="glass-card p-6 mb-6">
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">แดชบอร์ด</h2>
                 <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
                      <button onclick="app.filterAdmin('All')" class="px-5 py-2 bg-white/50 rounded-full text-sm font-semibold border border-white/50 backdrop-blur shadow-sm">ทั้งหมด</button>
@@ -501,15 +492,12 @@
                      <button onclick="app.filterAdmin('Rented')" class="px-5 py-2 bg-red-400/20 text-red-700 rounded-full text-sm font-semibold border border-red-400/30 backdrop-blur shadow-sm">ติดสัญญา</button>
                 </div>
             </div>
-
-            <div id="adminList" class="space-y-3">
-                <!-- Admin Items -->
-            </div>
+            <div id="adminList" class="space-y-3"></div>
         </div>
 
     </div>
 
-    <!-- AI CHAT WIDGET (NEW) -->
+    <!-- AI CHAT WIDGET -->
     <div class="chat-float-btn" onclick="app.toggleChat()">
         <!-- Icon/Image will be injected here by JS -->
         <i class="fas fa-comment-dots" id="chatFloatIcon"></i>
@@ -534,69 +522,31 @@
     </div>
 
 
-    <!-- === MODALS (Futuristic) === -->
+    <!-- === MODALS === -->
 
     <!-- 1. DETAIL MODAL -->
     <div id="detailModal" class="fixed inset-0 z-[60] hidden bg-gray-900/40 backdrop-blur-md flex items-end md:items-center justify-center">
         <div class="bg-white/80 backdrop-blur-2xl w-full h-[90vh] md:h-auto md:max-w-lg md:rounded-[40px] rounded-t-[40px] overflow-hidden shadow-2xl relative flex flex-col modal-enter border border-white/50">
-            
-            <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="absolute top-4 right-4 z-20 w-10 h-10 bg-black/10 hover:bg-black/20 backdrop-blur rounded-full flex items-center justify-center text-gray-700 transition">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <!-- Image Area -->
-            <div class="relative w-full aspect-square shrink-0 bg-gray-100">
+             <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="absolute top-4 right-4 z-20 w-10 h-10 bg-black/10 hover:bg-black/20 backdrop-blur rounded-full flex items-center justify-center text-gray-700 transition"><i class="fas fa-times"></i></button>
+             <div class="relative w-full aspect-square shrink-0 bg-gray-100">
                  <img id="modalMainImg" src="" class="w-full h-full object-cover">
-                 <div class="absolute bottom-4 right-4 bg-black/30 backdrop-blur px-3 py-1 rounded-full text-white text-xs font-bold tracking-widest border border-white/20">
-                    <span id="imageCounter">1/1</span>
-                 </div>
+                 <div class="absolute bottom-4 right-4 bg-black/30 backdrop-blur px-3 py-1 rounded-full text-white text-xs font-bold tracking-widest border border-white/20"><span id="imageCounter">1/1</span></div>
                  <button onclick="app.slideImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-white/40"><i class="fas fa-chevron-left"></i></button>
                  <button onclick="app.slideImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-white/40"><i class="fas fa-chevron-right"></i></button>
             </div>
-
-            <!-- Content -->
             <div class="p-8 flex-1 overflow-y-auto">
-                <div class="flex justify-between items-start mb-6">
-                    <span id="modalType" class="bg-blue-100/50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">TYPE</span>
-                    <div id="modalPrice" class="text-right"></div>
-                </div>
-                
+                <div class="flex justify-between items-start mb-6"><span id="modalType" class="bg-blue-100/50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">TYPE</span><div id="modalPrice" class="text-right"></div></div>
                 <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Floor</p>
-                        <p id="modalFloor" class="font-bold text-gray-800 text-lg">-</p>
-                    </div>
-                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Size</p>
-                        <p id="modalSize" class="font-bold text-gray-800 text-lg">-</p>
-                    </div>
-                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Unit</p>
-                        <p id="modalUnit" class="font-bold text-gray-800 text-lg">-</p>
-                    </div>
+                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Floor</p><p id="modalFloor" class="font-bold text-gray-800 text-lg">-</p></div>
+                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Size</p><p id="modalSize" class="font-bold text-gray-800 text-lg">-</p></div>
+                    <div class="bg-white/50 p-3 rounded-2xl text-center border border-white"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Unit</p><p id="modalUnit" class="font-bold text-gray-800 text-lg">-</p></div>
                 </div>
-
-                <!-- Description Section with AI Buttons -->
-                <div class="mb-6 bg-white/40 p-4 rounded-2xl border border-white shadow-sm">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">รายละเอียด</h3>
-                    <p id="modalDesc" class="text-sm text-gray-700 leading-relaxed font-light mb-4">-</p>
-                    
-                    <!-- AI Actions Group -->
+                <div class="mb-6 bg-white/40 p-4 rounded-2xl border border-white shadow-sm"><h3 class="text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">รายละเอียด</h3><p id="modalDesc" class="text-sm text-gray-700 leading-relaxed font-light mb-4">-</p>
                     <div class="flex gap-2 pt-3 border-t border-white/50">
-                        <button onclick="app.askAI()" class="flex-1 bg-white/60 hover:bg-white text-purple-600 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1 border border-purple-100/50">
-                            <i class="fas fa-sparkles text-yellow-400"></i> วิเคราะห์จุดเด่น
-                        </button>
-                        <button onclick="app.translatePublicDescription()" class="flex-1 bg-white/60 hover:bg-white text-blue-600 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1 border border-blue-100/50">
-                            <i class="fas fa-language"></i> Translate (EN)
-                        </button>
+                        <button onclick="app.translatePublicDescription()" class="flex-1 bg-white/60 hover:bg-white text-blue-600 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center justify-center gap-1 border border-blue-100/50"><i class="fas fa-language"></i> Translate (EN)</button>
                     </div>
                 </div>
-
-                <div class="space-y-3">
-                    <button onclick="app.contactLine()" class="w-full line-btn py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2">
-                        <i class="fab fa-line text-2xl"></i> จอง / สอบถาม
-                    </button>
-                </div>
+                <div class="space-y-3"><button onclick="app.contactLine()" class="w-full line-btn py-4 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2"><i class="fab fa-line text-2xl"></i> จอง / สอบถาม</button></div>
             </div>
         </div>
     </div>
@@ -605,26 +555,17 @@
     <div id="adminDetailModal" class="fixed inset-0 z-[65] hidden bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white/90 backdrop-blur-2xl w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-white/60 modal-enter">
             <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white/50">
-                <div class="flex items-center gap-4">
-                    <h3 class="text-2xl font-bold text-gray-800" id="adminModalTitle">ห้อง</h3>
-                    <span id="adminModalStatus" class="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide"></span>
-                </div>
+                <div class="flex items-center gap-4"><h3 class="text-2xl font-bold text-gray-800" id="adminModalTitle">ห้อง</h3><span id="adminModalStatus" class="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide"></span></div>
                 <div class="flex gap-3">
-                    <!-- AI Summary Button (NEW) -->
-                    <button onclick="app.summarizePropertyAI()" class="w-10 h-10 rounded-full bg-white border border-purple-200 text-purple-500 hover:bg-purple-50 hover:text-purple-600 hover:shadow-md transition flex items-center justify-center" title="สรุปข้อมูลด้วย AI">
-                        <i class="fas fa-magic"></i>
-                    </button>
+                    <button onclick="app.summarizePropertyAI()" class="w-10 h-10 rounded-full bg-white border border-purple-200 text-purple-500 hover:bg-purple-50 hover:text-purple-600 hover:shadow-md transition flex items-center justify-center" title="สรุปข้อมูลด้วย AI"><i class="fas fa-magic"></i></button>
                     <button onclick="app.printPoster()" class="w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-blue-500 hover:shadow-md transition flex items-center justify-center"><i class="fas fa-print"></i></button>
                     <button onclick="app.editCurrentProperty()" class="w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-yellow-500 hover:shadow-md transition flex items-center justify-center"><i class="fas fa-pen"></i></button>
                     <button onclick="app.closeAdminDetail()" class="w-10 h-10 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-
             <div class="p-8 overflow-y-auto">
                  <div class="flex flex-col md:flex-row gap-6 mb-8">
-                     <div class="w-32 h-32 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group relative" onclick="window.open(app.currentProperty.images ? JSON.parse(app.currentProperty.images)[0] : '#', '_blank')">
-                         <img id="adminModalThumb" src="" class="w-full h-full object-cover">
-                     </div>
+                     <div class="w-32 h-32 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group relative" onclick="window.open(app.currentProperty.images ? JSON.parse(app.currentProperty.images)[0] : '#', '_blank')"><img id="adminModalThumb" src="" class="w-full h-full object-cover"></div>
                      <div class="flex-1 grid grid-cols-2 gap-4 text-sm bg-white/60 p-5 rounded-2xl border border-white">
                          <div><span class="text-gray-400 text-[10px] uppercase font-bold">ราคา</span><span class="block font-bold text-xl text-blue-600" id="adminModalPrice">-</span></div>
                          <div><span class="text-gray-400 text-[10px] uppercase font-bold">ประเภท</span><span class="block font-bold text-gray-800 text-lg" id="adminModalType">-</span></div>
@@ -633,103 +574,50 @@
                          <div class="col-span-2 text-xs text-gray-400 mt-1">อัปเดตเมื่อ: <span id="adminModalTime"></span></div>
                      </div>
                  </div>
-
-                 <div class="bg-white/60 p-6 rounded-2xl border border-white mb-6 shadow-sm">
-                     <h4 class="font-bold text-gray-800 mb-4 text-xs uppercase tracking-widest text-blue-500">เอกสารสัญญา</h4>
-                     <div class="flex gap-4">
-                         <button id="btnOwnerContract" onclick="app.viewContract('owner')" class="flex-1 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm font-medium transition disabled:opacity-50">สัญญาเจ้าของ</button>
-                         <button id="btnTenantContract" onclick="app.viewContract('tenant')" class="flex-1 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm font-medium transition disabled:opacity-50">สัญญาผู้เช่า</button>
-                     </div>
-                 </div>
-                 
-                 <div id="adminRentedSection" class="bg-red-50/80 p-6 rounded-2xl border border-red-100 hidden">
-                     <h4 class="font-bold text-red-500 mb-4 text-xs uppercase tracking-widest">สถานะสัญญาเช่า</h4>
-                     <div class="flex justify-between bg-white p-4 rounded-xl border border-red-50">
-                         <div><span class="text-[10px] text-gray-400 block uppercase">เริ่ม</span><span id="adminRentStart" class="font-bold text-gray-800">-</span></div>
-                         <div><span class="text-[10px] text-gray-400 block uppercase">สิ้นสุด</span><span id="adminRentEnd" class="font-bold text-gray-800">-</span></div>
-                     </div>
-                 </div>
+                 <div class="bg-white/60 p-6 rounded-2xl border border-white mb-6 shadow-sm"><h4 class="font-bold text-gray-800 mb-4 text-xs uppercase tracking-widest text-blue-500">เอกสารสัญญา</h4><div class="flex gap-4"><button id="btnOwnerContract" onclick="app.viewContract('owner')" class="flex-1 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm font-medium transition disabled:opacity-50">สัญญาเจ้าของ</button><button id="btnTenantContract" onclick="app.viewContract('tenant')" class="flex-1 py-3 bg-white border border-gray-100 rounded-xl shadow-sm text-sm font-medium transition disabled:opacity-50">สัญญาผู้เช่า</button></div></div>
+                 <div id="adminRentedSection" class="bg-red-50/80 p-6 rounded-2xl border border-red-100 hidden"><h4 class="font-bold text-red-500 mb-4 text-xs uppercase tracking-widest">สถานะสัญญาเช่า</h4><div class="flex justify-between bg-white p-4 rounded-xl border border-red-50"><div><span class="text-[10px] text-gray-400 block uppercase">เริ่ม</span><span id="adminRentStart" class="font-bold text-gray-800">-</span></div><div><span class="text-[10px] text-gray-400 block uppercase">สิ้นสุด</span><span id="adminRentEnd" class="font-bold text-gray-800">-</span></div></div></div>
             </div>
         </div>
     </div>
-
+    
     <!-- 2. FORM MODAL -->
     <div id="formModal" class="fixed inset-0 z-[70] hidden bg-gray-900/60 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white/95 backdrop-blur w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col modal-enter">
-            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-gray-800" id="formTitle">แก้ไขข้อมูล</h2>
-                <button onclick="app.closeForm()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fas fa-times text-gray-500"></i></button>
-            </div>
-            
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center"><h2 class="text-2xl font-bold text-gray-800" id="formTitle">แก้ไขข้อมูล</h2><button onclick="app.closeForm()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><i class="fas fa-times text-gray-500"></i></button></div>
             <div class="p-8 overflow-y-auto">
                 <form id="propertyForm" onsubmit="app.submitProperty(event)" class="space-y-6">
                     <input type="hidden" name="id" id="inputId">
-                    
                     <div class="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-4">
                         <div class="grid grid-cols-2 gap-6">
                             <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">สถานะ</label><select id="inputStatus" onchange="app.handleStatusChange()" class="w-full rounded-xl border-0 bg-white shadow-sm p-3 focus:ring-2 focus:ring-blue-500"><option value="Post">ออนไลน์ (Post)</option><option value="Draft">ร่าง (Draft)</option><option value="Rented">ติดสัญญา (Rented)</option></select></div>
                             <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">ประเภท</label><select id="inputType" onchange="app.handleTypeChange()" class="w-full rounded-xl border-0 bg-white shadow-sm p-3 focus:ring-2 focus:ring-blue-500"><option value="Studio">Studio</option><option value="1BED">1 Bedroom</option><option value="2BED">2 Bedroom</option><option value="Facility">Facility (ส่วนกลาง)</option></select></div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-3 gap-4">
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">เลขห้อง</label><input type="text" id="inputUnit" required class="w-full rounded-xl border-gray-200 p-3 shadow-sm"></div>
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">ชั้น</label><input type="text" id="inputFloor" class="w-full rounded-xl border-gray-200 p-3 shadow-sm"></div>
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">ขนาด (ตร.ม.)</label><input type="text" id="inputSize" class="w-full rounded-xl border-gray-200 p-3 shadow-sm"></div>
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">ประเภทประกาศ</label><select id="inputSaleType" class="w-full rounded-xl border-gray-200 p-3 shadow-sm"><option value="Rent">เช่า</option><option value="Sell">ขาย</option><option value="Both">เช่าและขาย</option></select></div>
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">ราคา</label><input type="text" id="inputPrice" required class="w-full rounded-xl border-gray-200 p-3 shadow-sm" placeholder="เช่น 15,000"></div>
                     </div>
-
-                    <!-- AI Description Field -->
                     <div>
-                        <div class="flex justify-between items-end mb-2">
-                            <label class="block text-xs font-bold text-gray-400 uppercase">รายละเอียด</label>
-                            <div class="flex gap-2">
-                                <button type="button" onclick="app.generateAIDescription()" class="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full hover:bg-purple-100 transition flex items-center gap-1 shadow-sm border border-purple-100">
-                                    <i class="fas fa-magic"></i> ให้ AI ช่วยเขียน
-                                </button>
-                                <button type="button" onclick="app.translateDescription()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition flex items-center gap-1 shadow-sm border border-blue-100">
-                                    <i class="fas fa-language"></i> แปลเป็นอังกฤษ
-                                </button>
-                            </div>
-                        </div>
+                        <div class="flex justify-between items-end mb-2"><label class="block text-xs font-bold text-gray-400 uppercase">รายละเอียด</label><div class="flex gap-2"><button type="button" onclick="app.generateAIDescription()" class="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full hover:bg-purple-100 transition flex items-center gap-1 shadow-sm border border-purple-100"><i class="fas fa-magic"></i> ให้ AI ช่วยเขียน</button><button type="button" onclick="app.translateDescription()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition flex items-center gap-1 shadow-sm border border-blue-100"><i class="fas fa-language"></i> แปลเป็นอังกฤษ</button></div></div>
                         <textarea id="inputDesc" rows="4" class="w-full rounded-xl border-gray-200 p-3 shadow-sm text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition" placeholder="ใส่รายละเอียดห้อง หรือกดปุ่มให้ AI ช่วยเขียน..."></textarea>
                     </div>
-
                     <div class="space-y-4 pt-2">
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-2">รูปภาพ</label><input type="file" id="inputImages" multiple accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"></div>
-                        
-                        <!-- Owner Contracts -->
-                        <div class="bg-gray-100/50 p-4 rounded-xl">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">สัญญาเจ้าของ</label>
-                            <div id="existingOwnerContracts" class="flex flex-wrap gap-2 mb-2"></div>
-                            <input type="file" id="inputOwnerContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white">
-                            <p class="text-[10px] text-gray-400 mt-1">*อัปโหลดเพิ่มได้ (ของเก่าจะไม่หาย)</p>
-                        </div>
+                        <div class="bg-gray-100/50 p-4 rounded-xl"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">สัญญาเจ้าของ</label><div id="existingOwnerContracts" class="flex flex-wrap gap-2 mb-2"></div><input type="file" id="inputOwnerContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white"><p class="text-[10px] text-gray-400 mt-1">*อัปโหลดเพิ่มได้ (ของเก่าจะไม่หาย)</p></div>
                     </div>
-
                     <div id="rentedFields" class="hidden bg-red-50 p-6 rounded-3xl border border-red-100 space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="text-xs font-bold text-red-400 uppercase mb-1">วันเริ่มสัญญา</label><input type="date" id="inputRentStart" class="w-full rounded-xl border-red-100 bg-white"></div>
                             <div><label class="text-xs font-bold text-red-400 uppercase mb-1">วันสิ้นสุดสัญญา</label><input type="date" id="inputRentEnd" class="w-full rounded-xl border-red-100 bg-white"></div>
                         </div>
-                        
-                        <!-- Tenant Contracts -->
-                        <div>
-                             <label class="text-xs font-bold text-red-400 uppercase mb-2 block">สัญญาผู้เช่า</label>
-                             <div id="existingTenantContracts" class="flex flex-wrap gap-2 mb-2"></div>
-                             <input type="file" id="inputTenantContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white">
-                             <p class="text-[10px] text-red-300 mt-1">*อัปโหลดสัญญาฉบับใหม่เพิ่มได้เลย</p>
-                        </div>
+                        <div><label class="text-xs font-bold text-red-400 uppercase mb-2 block">สัญญาผู้เช่า</label><div id="existingTenantContracts" class="flex flex-wrap gap-2 mb-2"></div><input type="file" id="inputTenantContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white"><p class="text-[10px] text-red-300 mt-1">*อัปโหลดสัญญาฉบับใหม่เพิ่มได้เลย</p></div>
                     </div>
-
-                    <div class="pt-4 flex gap-4">
-                         <button type="submit" class="flex-1 ios-btn py-4 rounded-2xl font-bold shadow-xl">บันทึก</button>
-                         <button type="button" id="btnDeleteProperty" onclick="app.deleteCurrentProperty()" class="w-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center hover:bg-red-100 hidden"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    <div class="pt-4 flex gap-4"><button type="submit" class="flex-1 ios-btn py-4 rounded-2xl font-bold shadow-xl">บันทึก</button><button type="button" id="btnDeleteProperty" onclick="app.deleteCurrentProperty()" class="w-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center hover:bg-red-100 hidden"><i class="fas fa-trash-alt"></i></button></div>
                 </form>
             </div>
         </div>
@@ -743,12 +631,20 @@
             aiContext: {}, // New: AI Settings state
             currentProperty: null,
             isAdmin: false,
-            // Updated state to hold arrays of URLs
             currentFiles: { images: [], owner: [], tenant: [] }, 
 
             init: async () => {
                 await app.fetchData();
                 app.loadAISettings(); // Load AI settings on init
+                
+                // Login persistence check
+                const isAdmin = localStorage.getItem('condolist_is_admin');
+                if (isAdmin === 'true') {
+                    app.isAdmin = true;
+                    // Wait a bit for DOM to be ready before toggling view if needed
+                    setTimeout(() => app.toggleAdminView(true), 100);
+                }
+
                 window.onclick = function(event) {
                     if (!event.target.matches('.fa-bars') && !event.target.closest('button')) {
                          const nav = document.getElementById("navDropdown");
@@ -759,11 +655,8 @@
                     }
                 }
             },
-
-            // ... (rest of the functions: fetchData, loadMockData, applySettings, render, toggleMenu, renderGrid, filter, openDetail, closeAdminDetail, viewContract, slideImage, updateSlide, contactLine, toggleLoading, showLogin, logout, toggleAdminView, renderAdminList, filterAdmin, showAddRoom, editCurrentProperty, handleStatusChange, handleTypeChange, closeForm, submitProperty, deleteCurrentProperty, showSettings, printPoster, generateAIDescription, summarizePropertyAI, translateDescription, translatePublicDescription, askAI, fileToBase64, goHome, loadAISettings, saveAISettings, showAISettings, toggleChat, sendChatMessage, removeFile) ...
-            // Re-adding essential logic functions to ensure completeness
-
-             fetchData: async () => {
+            
+            fetchData: async () => {
                 app.toggleLoading(true);
                 if (GAS_API_URL.includes("placeholder")) {
                     await app.loadMockData();
@@ -798,7 +691,7 @@
                 if(app.settings.lineUrl) document.getElementById('btnLine').href = app.settings.lineUrl;
                 if(app.settings.mapUrl) document.getElementById('btnMap').href = app.settings.mapUrl;
             },
-
+            
             render: () => {
                 app.renderGrid(app.data);
                 app.renderAdminList(app.data);
@@ -892,7 +785,7 @@
                         appointment: "",
                         nearby: "",
                         rules: "",
-                        others: "" // เพิ่มฟิลด์ใหม่
+                        others: ""
                     };
                 }
                 app.updateChatBranding();
@@ -907,17 +800,13 @@
                 const floatBtn = document.querySelector('.chat-float-btn');
                 const headerInfo = document.querySelector('.bot-info');
                 
-                // Update Name
                 document.getElementById('chatHeaderName').innerText = app.aiContext.botName || "น้อง Condolist AI";
                 
-                // Update Icon (Floating Button)
                 if (app.aiContext.botIcon) {
                     floatBtn.innerHTML = `<img src="${app.aiContext.botIcon}">`;
-                    // Update Icon (Header) - reuse the image logic
                     const currentHeaderContent = document.getElementById('chatHeaderName').outerHTML;
                     headerInfo.innerHTML = `<img src="${app.aiContext.botIcon}"> ${currentHeaderContent}`;
                 } else {
-                    // Default Icons
                     floatBtn.innerHTML = `<i class="fas fa-comment-dots"></i>`;
                     const currentHeaderContent = document.getElementById('chatHeaderName').outerHTML;
                     headerInfo.innerHTML = `<i class="fas fa-robot" style="font-size: 20px;"></i> ${currentHeaderContent}`;
@@ -991,7 +880,7 @@
                                 const reader = new FileReader();
                                 reader.onload = (e) => {
                                     document.getElementById('ai-icon-preview').src = e.target.result;
-                                    document.getElementById('ai-icon-base64').value = e.target.result; // Store base64 for saving
+                                    document.getElementById('ai-icon-base64').value = e.target.result; 
                                 }
                                 reader.readAsDataURL(input.files[0]);
                             }
@@ -1005,7 +894,7 @@
                             appointment: document.getElementById('ai-appointment').value,
                             nearby: document.getElementById('ai-nearby').value,
                             rules: document.getElementById('ai-rules').value,
-                            others: document.getElementById('ai-others').value // เก็บค่า Others
+                            others: document.getElementById('ai-others').value
                         }
                     }
                 });
@@ -1022,24 +911,20 @@
                 const text = input.value.trim();
                 if(!text) return;
                 
-                // Add User Message
                 const messagesDiv = document.getElementById("chatMessages");
                 messagesDiv.innerHTML += `<div class="message user">${text}</div>`;
                 input.value = "";
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 
-                // Add Typing Indicator
                 const loadingId = "typing-" + Date.now();
                 messagesDiv.innerHTML += `<div class="message ai typing-indicator" id="${loadingId}"><span></span><span></span><span></span></div>`;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 
-                // --- 1. เตรียมข้อมูลห้องให้ AI รู้จัก (Knowledge Base) ---
                 const availableRooms = app.data.filter(r => r.status === 'Post').map(r => {
                     return `- Unit ${r.unit}: ${r.type}, ชั้น ${r.floor}, ${r.size}ตรม., ราคา ${r.price} (${r.saleType}), จุดเด่น: ${r.description || '-'}`;
                 }).join("\n");
 
-                // --- 2. สร้าง Prompt สุดฉลาด (Smart Salesperson Persona) ---
-                const botName = app.aiContext.botName || "น้อง Condolist"; // Use configured name
+                const botName = app.aiContext.botName || "น้อง Condolist";
                 const contextPrompt = `
                     บทบาท: คุณคือ "${botName}" สุดยอดเซลล์ขายคอนโดที่เก่งที่สุด เป็นกันเอง และช่วยเหลือลูกค้าได้จริง
                     
@@ -1233,10 +1118,10 @@
                     title: '<span class="gradient-text text-2xl">เข้าสู่ระบบแอดมิน</span>',
                     customClass: {
                         popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl p-0 pb-6',
-                        title: 'pt-8',
+                        title: 'pt-8', 
                         confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4 text-base',
                         cancelButton: 'bg-white/50 text-gray-500 hover:text-gray-700 px-6 py-3 rounded-xl border-0 w-full mt-2 text-sm',
-                        actions: 'flex flex-col w-full px-8 pb-4 gap-0',
+                        actions: 'flex flex-col w-full px-8 pb-4 gap-0', 
                         htmlContainer: '!overflow-visible px-8 m-0' 
                     },
                     buttonsStyling: false,
@@ -1294,6 +1179,8 @@
                                 showConfirmButton: false,
                                 customClass: { popup: 'ultra-glass rounded-[32px]' }
                             });
+                            // Save to local storage
+                            localStorage.setItem('condolist_is_admin', 'true');
                          } else {
                             Swal.fire({
                                 icon: 'error',
@@ -1313,6 +1200,7 @@
                         const json = await res.json();
                         if (json.status === "success") {
                             app.isAdmin = true;
+                            localStorage.setItem('condolist_is_admin', 'true');
                             app.toggleAdminView(true);
                             Swal.fire({ 
                                 icon: 'success', 
@@ -1337,6 +1225,7 @@
 
             logout: () => {
                 app.isAdmin = false;
+                localStorage.removeItem('condolist_is_admin');
                 app.toggleAdminView(false);
                 app.toggleMenu();
             },
@@ -1485,7 +1374,6 @@
             submitProperty: async (e) => {
                 e.preventDefault();
                 app.toggleLoading(true);
-                await new Promise(r => setTimeout(r, 1000));
                 
                 const getNewFilesBase64 = async (inputId) => {
                     const input = document.getElementById(inputId);
@@ -1528,6 +1416,10 @@
                     const existingIndex = app.data.findIndex(p => p.id === payload.id);
                     if(existingIndex >= 0) app.data[existingIndex] = payload;
                     else app.data.unshift(payload);
+                     app.closeForm();
+                     app.toggleLoading(false);
+                     if(app.isAdmin) app.renderAdminList(app.data);
+                     else app.renderGrid(app.data);
                 } else {
                      const finalPayload = { ...payload, action: "saveProperty" };
                      try {
@@ -1538,14 +1430,11 @@
                         const json = await res.json();
                         if(json.status === "success") {
                             await app.fetchData();
+                            app.closeForm();
+                            app.toggleLoading(false);
                         } else { throw new Error(json.message); }
-                    } catch(e) { Swal.fire("Error", e.message, "error"); }
+                    } catch(e) { Swal.fire("Error", e.message, "error"); app.toggleLoading(false); }
                 }
-                
-                app.closeForm();
-                app.toggleLoading(false);
-                if(app.isAdmin) app.renderAdminList(app.data);
-                else app.renderGrid(app.data);
             },
 
             deleteCurrentProperty: async () => {
@@ -1679,6 +1568,7 @@
                 }
             },
 
+            // --- PRINTING (KEEP EXACTLY SAME LAYOUT) ---
             printPoster: () => {
                 const item = app.currentProperty;
                 const images = JSON.parse(item.images || "[]");
@@ -1694,6 +1584,7 @@
                 }
 
                 let priceHtml = '';
+                // Changed labels to Thai: Rent->เช่า, Sell->ขาย
                 const createPriceTag = (price, label) => `<div class="flex items-baseline justify-center gap-2"><span class="text-4xl font-extrabold text-pink-600">฿${price}</span><span class="text-xl text-gray-500 font-bold">(${label})</span></div>`;
 
                 if (item.saleType === 'Both' && item.price.includes('/')) {
@@ -1745,6 +1636,7 @@
                 printWindow.document.close();
             },
 
+            // --- GEMINI AI FEATURES ---
             generateAIDescription: async () => {
                 const type = document.getElementById("inputType").value;
                 const floor = document.getElementById("inputFloor").value || "-";
@@ -1770,6 +1662,7 @@
                 app.toggleLoading(false);
             },
 
+            // New Function: Summarize Property for Admin
             summarizePropertyAI: async () => {
                 const item = app.currentProperty;
                 const prompt = `ทำหน้าที่เป็นนายหน้าอสังหาฯ ช่วยสรุปข้อมูลห้องนี้เป็นข้อความสั้นๆ ภาษาไทย (ใส่ Emoji ให้น่าสนใจ) สำหรับส่งให้ลูกค้าทาง Line:
@@ -1841,6 +1734,7 @@
                     return;
                 }
 
+                // Check if already translated
                 if (descElement.innerText.includes("[English Version]")) return;
 
                 app.toggleLoading(true);
@@ -1883,9 +1777,10 @@
                     const data = await response.json();
                     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Translation failed";
                     
+                    // ต่อท้ายข้อความเดิม
                     const textarea = document.getElementById("inputDesc");
                     textarea.value = textarea.value + "\n\n[English Version]\n" + text.trim();
-                    textarea.scrollTop = textarea.scrollHeight; 
+                    textarea.scrollTop = textarea.scrollHeight; // Scroll to bottom
                 } catch (e) {
                     Swal.fire("AI Error", "ไม่สามารถแปลภาษาได้", "error");
                 }
