@@ -297,7 +297,7 @@
     <!-- CONFIG -->
     <script>
         // *** REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL ***
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxec2WVPdaQP_i3zdij5ZBBctghL7NJC2kDcs1gVF3nEpsc6-2PfHyyf9dw-Mw8u56l3w/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyR6eCj_placeholder_YOUR_ID_HERE/exec";
         
         // *** GEMINI API KEY ***
         const apiKey = "AIzaSyD5BAKXcUIS-kzAF56miiimF5nsmsXnlyU"; // Connected!
@@ -1102,17 +1102,7 @@
 
             updateSlide: () => {
                 document.getElementById("modalMainImg").src = app.currentImages[app.currentImageIndex];
-                document.getElementById("imageCounter").innerText = `${app.currentImageIndex + 1}/${app.currentImages.length}`;
-            },
-
-            contactLine: () => { window.open(app.settings.lineUrl, '_blank'); },
-
-            toggleLoading: (show) => {
-                const el = document.getElementById("loadingOverlay");
-                if(show) el.classList.remove("hidden");
-                else el.classList.add("hidden");
-            },
-
+            // --- ADMIN ---
             showLogin: async () => {
                 const { value: password } = await Swal.fire({
                     title: '<span class="gradient-text text-2xl">เข้าสู่ระบบแอดมิน</span>',
@@ -1168,9 +1158,16 @@
                 });
 
                 if (password) {
+                    // แสดงวงกลมหมุนทันทีที่กด Login
+                    app.toggleLoading(true);
+
                     if(GAS_API_URL.includes("placeholder")) {
+                         // จำลองการโหลดเล็กน้อยเพื่อให้เห็นวงกลมหมุน (กรณี Mock Data)
+                         await new Promise(r => setTimeout(r, 800));
+                         
                          if(password === "1234") {
                             app.isAdmin = true;
+                            localStorage.setItem('condolist_is_admin', 'true');
                             app.toggleAdminView(true);
                             Swal.fire({ 
                                 icon: 'success', 
@@ -1179,8 +1176,6 @@
                                 showConfirmButton: false,
                                 customClass: { popup: 'ultra-glass rounded-[32px]' }
                             });
-                            // Save to local storage
-                            localStorage.setItem('condolist_is_admin', 'true');
                          } else {
                             Swal.fire({
                                 icon: 'error',
@@ -1189,6 +1184,7 @@
                                 customClass: { popup: 'ultra-glass rounded-[32px]', confirmButton: 'ios-btn px-6 py-2 rounded-xl' }
                             });
                          }
+                         app.toggleLoading(false); // ปิดวงกลมหมุน
                          return;
                     }
                     
@@ -1198,6 +1194,9 @@
                             body: JSON.stringify({ action: 'login', password: password })
                         });
                         const json = await res.json();
+                        
+                        app.toggleLoading(false); // ปิดวงกลมหมุนเมื่อได้ผลลัพธ์
+
                         if (json.status === "success") {
                             app.isAdmin = true;
                             localStorage.setItem('condolist_is_admin', 'true');
@@ -1218,6 +1217,7 @@
                             });
                         }
                     } catch(e) {
+                         app.toggleLoading(false); // ปิดวงกลมหมุนกรณี Error
                          Swal.fire("Error", "Login Error", "error");
                     }
                 }
