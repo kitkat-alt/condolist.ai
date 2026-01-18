@@ -10,11 +10,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // Global Error Handler
+        // --- 1. ระบบดักจับ Error ทั่วโลก (ป้องกันหน้าขาว) ---
         window.onerror = function(message, source, lineno, colno, error) {
             console.error("Global Error:", message);
-            // แสดง Error ให้เห็นชัดๆ ถ้าไม่ใช่บน Production
-            // alert(`Error: ${message}`); 
+            // ถ้ามี Error ร้ายแรง ให้บังคับปิด Loading ทันที
+            const el = document.getElementById("loadingOverlay");
+            if(el && !el.classList.contains("hidden")) {
+                el.classList.add("hidden");
+                // Swal.fire("ระบบขัดข้อง", "เกิดข้อผิดพลาดบางอย่าง กรุณารีเฟรชหน้าเว็บ", "error");
+            }
         };
 
         tailwind.config = {
@@ -57,7 +61,7 @@
         .grid-square img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .modal-enter { animation: springUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes springUp { from { transform: translateY(100%) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-        #loadingOverlay { background: rgba(255,255,255,0.3); backdrop-filter: blur(20px); z-index: 9999; }
+        #loadingOverlay { background: rgba(255,255,255,0.5); backdrop-filter: blur(5px); z-index: 9999; }
         .gradient-text { background: linear-gradient(135deg, #007AFF 0%, #AF52DE 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         /* Chat Widget */
@@ -86,13 +90,9 @@
     <script>
         // ==========================================
         //  ⚠️ CONFIGURATION AREA ⚠️
-        //  ใส่ลิงก์ Web App ของคุณที่นี่ (ต้องลงท้ายด้วย /exec)
         // ==========================================
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzbsTji9vMpmE44-yUqHUQOfHRbgdXF7rCPyXKOtAI195205pblqNl-_RC59chdkF5RgA/exec"; 
-
-        // Mock Data (ใช้เฉพาะตอนเชื่อมต่อไม่ได้)
-        const MOCK_SETTINGS = { profileName: "Condo Agent Pro", profileDesc: "Luxury Living Redefined.", profileImage: "https://via.placeholder.com/150", lineUrl: "#", mapUrl: "#" };
-        const MOCK_PROPERTIES = []; 
+        const apiKey = "AIzaSyA2Jymojz2L5Cu4JDE3hRK7q54IhMv0TcM"; // Gemini API Key
     </script>
 
     <div id="loadingOverlay" class="fixed inset-0 flex flex-col items-center justify-center hidden">
@@ -100,6 +100,7 @@
             <div class="absolute inset-0 rounded-full border-4 border-blue-100"></div>
             <div class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
         </div>
+        <p class="mt-4 text-blue-600 font-bold animate-pulse">กำลังโหลด...</p>
     </div>
 
     <!-- APP -->
@@ -275,79 +276,79 @@
                         </div>
                         
                         <!-- Owner Contracts -->
-                        <div class="bg-gray-100/50 p-4 rounded-xl">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">สัญญาเจ้าของ</label>
-                            <div id="existingOwnerContracts" class="flex flex-wrap gap-2 mb-2"></div>
-                            <input type="file" id="inputOwnerContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white">
-                            <p class="text-[10px] text-gray-400 mt-1">*อัปโหลดเพิ่มได้ (ของเก่าจะไม่หาย)</p>
-                        </div>
+                        <div class="bg-gray-100/50 p-4 rounded-xl"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">สัญญาเจ้าของ</label><div id="existingOwnerContracts" class="flex flex-wrap gap-2 mb-2"></div><input type="file" id="inputOwnerContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white"><p class="text-[10px] text-gray-400 mt-1">*อัปโหลดเพิ่มได้ (ของเก่าจะไม่หาย)</p></div>
                     </div>
-
                     <div id="rentedFields" class="hidden bg-red-50 p-6 rounded-3xl border border-red-100 space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="text-xs font-bold text-red-400 uppercase mb-1">วันเริ่มสัญญา</label><input type="date" id="inputRentStart" class="w-full rounded-xl border-red-100 bg-white"></div>
                             <div><label class="text-xs font-bold text-red-400 uppercase mb-1">วันสิ้นสุดสัญญา</label><input type="date" id="inputRentEnd" class="w-full rounded-xl border-red-100 bg-white"></div>
                         </div>
-                        
-                        <!-- Tenant Contracts -->
-                        <div>
-                             <label class="text-xs font-bold text-red-400 uppercase mb-2 block">สัญญาผู้เช่า</label>
-                             <div id="existingTenantContracts" class="flex flex-wrap gap-2 mb-2"></div>
-                             <input type="file" id="inputTenantContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white">
-                             <p class="text-[10px] text-red-300 mt-1">*อัปโหลดสัญญาฉบับใหม่เพิ่มได้เลย</p>
-                        </div>
+                        <div><label class="text-xs font-bold text-red-400 uppercase mb-2 block">สัญญาผู้เช่า</label><div id="existingTenantContracts" class="flex flex-wrap gap-2 mb-2"></div><input type="file" id="inputTenantContract" multiple accept="image/*,.pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white"><p class="text-[10px] text-red-300 mt-1">*อัปโหลดสัญญาฉบับใหม่เพิ่มได้เลย</p></div>
                     </div>
-
-                    <div class="pt-4 flex gap-4">
-                         <button type="submit" class="flex-1 ios-btn py-4 rounded-2xl font-bold shadow-xl">บันทึก</button>
-                         <button type="button" id="btnDeleteProperty" onclick="app.deleteCurrentProperty()" class="w-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center hover:bg-red-100 hidden"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    <div class="pt-4 flex gap-4"><button type="submit" class="flex-1 ios-btn py-4 rounded-2xl font-bold shadow-xl">บันทึก</button><button type="button" id="btnDeleteProperty" onclick="app.deleteCurrentProperty()" class="w-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center hover:bg-red-100 hidden"><i class="fas fa-trash-alt"></i></button></div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JS -->
     <script>
         const app = {
             data: [],
             settings: {},
-            aiContext: {}, // New: AI Settings state
+            aiContext: {}, 
             currentProperty: null,
             isAdmin: false,
-            // Updated state to hold arrays of URLs
             currentFiles: { images: [], owner: [], tenant: [] }, 
+            
+            // --- 2. ระบบจัดการ Loading แบบมี Timeout ป้องกันการค้าง ---
+            toggleLoading: (show) => { 
+                const el = document.getElementById("loadingOverlay"); 
+                if (show) {
+                    el.classList.remove("hidden");
+                    // ตั้งเวลา 15 วินาที ถ้ายังไม่ปิด ให้บังคับปิดเอง
+                    if (app.loadingTimeout) clearTimeout(app.loadingTimeout);
+                    app.loadingTimeout = setTimeout(() => {
+                        if(!el.classList.contains("hidden")) {
+                             console.warn("Auto-hiding loading overlay (timeout)");
+                             el.classList.add("hidden");
+                        }
+                    }, 15000);
+                } else {
+                    el.classList.add("hidden");
+                    if (app.loadingTimeout) clearTimeout(app.loadingTimeout);
+                }
+            },
 
             init: async () => {
-                await app.fetchData();
-                app.loadAISettings(); // Load AI settings on init
+                // เคลียร์สถานะ Loading ตั้งแต่เริ่ม เพื่อความชัวร์
+                app.toggleLoading(false);
                 
-                // Login persistence check
+                await app.fetchData();
+                app.loadAISettings(); 
+                
+                // ตรวจสอบการล็อกอินค้างไว้
                 const isAdmin = localStorage.getItem('condolist_is_admin');
                 if (isAdmin === 'true') {
                     app.isAdmin = true;
-                    // Wait a bit for DOM to be ready before toggling view if needed
+                    // รอให้ DOM พร้อมก่อนสลับหน้า
                     setTimeout(() => app.toggleAdminView(true), 100);
                 }
 
                 window.onclick = function(event) {
                     if (!event.target.matches('.fa-bars') && !event.target.closest('button')) {
                          const nav = document.getElementById("navDropdown");
-                         if(!nav.classList.contains('hidden')) {
+                         if(nav && !nav.classList.contains('hidden')) {
                              nav.classList.add('opacity-0', 'scale-95');
                              setTimeout(() => nav.classList.add('hidden'), 200);
                          }
                     }
                 }
             },
-
+            
+            // --- 3. การโหลดข้อมูลแบบ Try-Finally ---
             fetchData: async () => {
                 app.toggleLoading(true);
-                if (GAS_API_URL.includes("placeholder")) {
-                    await app.loadMockData();
-                    app.toggleLoading(false);
-                    return;
-                }
                 try {
                     const res = await fetch(`${GAS_API_URL}?action=getData`);
                     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -361,24 +362,19 @@
                     } else { throw new Error(json.message || "Server Error"); }
                 } catch (e) { 
                     console.error("Fetch failed:", e);
-                    // Show error alert on load fail instead of silent mock fallback
+                    // ถ้าโหลดไม่สำเร็จ แสดง Error Alert แทนการโหลด Mock Data เงียบๆ
                     Swal.fire({
                         icon: 'error',
                         title: 'เชื่อมต่อ Server ไม่ได้',
-                        text: 'ระบบจะแสดงข้อมูลตัวอย่างแทน\n(' + e.message + ')',
-                        footer: 'กรุณาเช็ค URL หรือการตั้งค่า Deploy (Anyone)'
+                        text: 'ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบลิงก์ GAS_API_URL ในโค้ด',
+                        footer: e.message
                     });
-                    await app.loadMockData(); 
+                    // ไม่โหลด Mock Data แล้ว เพื่อให้ผู้ใช้รู้ว่ามีปัญหาจริง
+                    // await app.loadMockData(); 
+                } finally {
+                    // **สำคัญ** ปิด Loading เสมอ ไม่ว่าจะสำเร็จหรือพัง
+                    app.toggleLoading(false);
                 }
-                app.toggleLoading(false);
-            },
-            
-            loadMockData: async () => {
-                await new Promise(r => setTimeout(r, 500)); // Faster mock load
-                app.data = MOCK_PROPERTIES;
-                app.settings = MOCK_SETTINGS;
-                app.applySettings();
-                app.render();
             },
 
             applySettings: () => {
@@ -417,7 +413,6 @@
                 const grid = document.getElementById("propertyGrid");
                 grid.innerHTML = "";
                 const displayItems = items.filter(i => i.status === "Post");
-                
                 if(displayItems.length === 0) {
                     document.getElementById("emptyState").classList.remove("hidden");
                     return;
@@ -427,8 +422,6 @@
                 displayItems.forEach(item => {
                     const images = JSON.parse(item.images || "[]");
                     const cover = images.length > 0 ? images[0] : "https://via.placeholder.com/300?text=No+Image";
-                    
-                    // Glass Card Grid Item
                     const el = document.createElement("div");
                     el.className = "grid-square bg-white shadow-sm border border-white/50 cursor-pointer overflow-hidden";
                     el.onclick = () => app.openDetail(item);
@@ -441,54 +434,33 @@
             },
 
             filter: (type) => {
-                // Remove visual active state from all items
                 document.querySelectorAll('.filter-item').forEach(el => {
                     const ring = el.querySelector('.ring-wrapper');
                     const text = el.querySelector('span');
-                    
-                    // Reset styling
                     ring.classList.remove('filter-ring-active');
                     text.classList.remove('text-blue-600', 'font-bold');
                     text.classList.add('text-gray-500');
-                    
-                    // Add active styling if match
                     if (el.dataset.type === type) {
                         ring.classList.add('filter-ring-active');
                         text.classList.add('text-blue-600', 'font-bold');
                         text.classList.remove('text-gray-500');
                     }
                 });
-
                 let filtered = app.data;
                 if(type !== "All") filtered = app.data.filter(i => i.type === type);
                 app.renderGrid(filtered);
             },
 
-            // --- AI CHAT LOGIC ---
             toggleChat: () => {
                 const win = document.getElementById("chatWindow");
-                if(win.classList.contains("hidden")) {
-                    win.classList.remove("hidden");
-                } else {
-                    win.classList.add("hidden");
-                }
+                if(win.classList.contains("hidden")) win.classList.remove("hidden");
+                else win.classList.add("hidden");
             },
             
             loadAISettings: () => {
                 const saved = localStorage.getItem('condolist_ai_context');
-                if(saved) {
-                    app.aiContext = JSON.parse(saved);
-                } else {
-                    app.aiContext = {
-                        botName: "น้อง Condolist AI",
-                        botIcon: "", 
-                        terms: "",
-                        appointment: "",
-                        nearby: "",
-                        rules: "",
-                        others: ""
-                    };
-                }
+                if(saved) app.aiContext = JSON.parse(saved);
+                else app.aiContext = { botName: "น้อง Condolist AI", botIcon: "", terms: "", appointment: "", nearby: "", rules: "", others: "" };
                 app.updateChatBranding();
             },
             
@@ -500,9 +472,7 @@
             updateChatBranding: () => {
                 const floatBtn = document.querySelector('.chat-float-btn');
                 const headerInfo = document.querySelector('.bot-info');
-                
                 document.getElementById('chatHeaderName').innerText = app.aiContext.botName || "น้อง Condolist AI";
-                
                 if (app.aiContext.botIcon) {
                     floatBtn.innerHTML = `<img src="${app.aiContext.botIcon}">`;
                     const currentHeaderContent = document.getElementById('chatHeaderName').outerHTML;
@@ -516,93 +486,30 @@
             
             showAISettings: async () => {
                 app.toggleMenu();
-                
                 const { value: formValues } = await Swal.fire({
                     title: '<span class="gradient-text text-xl">ตั้งค่าสมอง & ตัวตน AI</span>',
-                    customClass: {
-                        popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl',
-                        confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4',
-                        cancelButton: 'bg-gray-100 text-gray-500 px-6 py-3 rounded-xl hover:bg-gray-200 border-0 w-full mt-2',
-                        htmlContainer: 'text-left' 
-                    },
+                    customClass: { popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl', confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4', cancelButton: 'bg-gray-100 text-gray-500 px-6 py-3 rounded-xl hover:bg-gray-200 border-0 w-full mt-2', htmlContainer: 'text-left' },
                     html: `
                         <div class="space-y-4">
-                            <!-- Bot Identity Section -->
-                            <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
-                                <label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">ตัวตนน้อง AI</label>
-                                <div class="flex items-center gap-4 mb-3">
-                                    <div class="relative w-16 h-16 shrink-0">
-                                        <img src="${app.aiContext.botIcon || 'https://via.placeholder.com/150?text=AI'}" id="ai-icon-preview" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm bg-gray-200">
-                                        <div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm border border-gray-100 cursor-pointer" onclick="document.getElementById('ai-icon-input').click()">
-                                            <i class="fas fa-camera text-gray-500 text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1">
-                                        <input id="ai-name" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="ชื่อน้อง AI (เช่น น้องส้ม)" value="${app.aiContext.botName || ''}">
-                                    </div>
-                                </div>
-                                <input type="file" id="ai-icon-input" class="hidden" accept="image/*" onchange="previewAIIcon(this)">
-                                <input type="hidden" id="ai-icon-base64" value="${app.aiContext.botIcon || ''}">
-                            </div>
-
-                            <!-- Knowledge Section -->
-                            <div class="space-y-3">
-                                <p class="text-xs text-gray-400 font-bold uppercase">ชุดความรู้ (Knowledge)</p>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">เงื่อนไขสัญญา (มัดจำ/ระยะเวลา)</label>
-                                    <textarea id="ai-terms" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น สัญญา 1 ปี มัดจำ 2 เดือน...">${app.aiContext.terms || ''}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">การนัดดูห้อง</label>
-                                    <textarea id="ai-appointment" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ต้องนัดล่วงหน้า 1 วัน...">${app.aiContext.appointment || ''}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">สถานที่ใกล้เคียง/จุดเด่นทำเล</label>
-                                    <textarea id="ai-nearby" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ใกล้ BTS อโศก...">${app.aiContext.nearby || ''}</textarea>
-                                </div>
-                                 <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">กฎระเบียบอื่นๆ</label>
-                                    <textarea id="ai-rules" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ห้ามเลี้ยงสัตว์...">${app.aiContext.rules || ''}</textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 text-purple-500">ข้อมูลอื่นๆ (Optional)</label>
-                                    <textarea id="ai-others" class="w-full rounded-xl border border-purple-200 p-2 text-sm bg-purple-50/30" placeholder="ข้อมูลเพิ่มเติมที่อยากให้ AI รู้...">${app.aiContext.others || ''}</textarea>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'บันทึก',
-                    cancelButtonText: 'ยกเลิก',
-                    focusConfirm: false,
+                            <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100"><label class="block text-[10px] font-bold text-blue-500 uppercase mb-2">ตัวตนน้อง AI</label><div class="flex items-center gap-4 mb-3"><div class="relative w-16 h-16 shrink-0"><img src="${app.aiContext.botIcon || 'https://via.placeholder.com/150?text=AI'}" id="ai-icon-preview" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm bg-gray-200"><div class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm border border-gray-100 cursor-pointer" onclick="document.getElementById('ai-icon-input').click()"><i class="fas fa-camera text-gray-500 text-xs"></i></div></div><div class="flex-1"><input id="ai-name" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="ชื่อน้อง AI (เช่น น้องส้ม)" value="${app.aiContext.botName || ''}"></div></div><input type="file" id="ai-icon-input" class="hidden" accept="image/*" onchange="previewAIIcon(this)"><input type="hidden" id="ai-icon-base64" value="${app.aiContext.botIcon || ''}"></div>
+                            <div class="space-y-3"><p class="text-xs text-gray-400 font-bold uppercase">ชุดความรู้ (Knowledge)</p><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">เงื่อนไขสัญญา (มัดจำ/ระยะเวลา)</label><textarea id="ai-terms" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น สัญญา 1 ปี มัดจำ 2 เดือน...">${app.aiContext.terms || ''}</textarea></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">การนัดดูห้อง</label><textarea id="ai-appointment" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ต้องนัดล่วงหน้า 1 วัน...">${app.aiContext.appointment || ''}</textarea></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">สถานที่ใกล้เคียง/จุดเด่นทำเล</label><textarea id="ai-nearby" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ใกล้ BTS อโศก...">${app.aiContext.nearby || ''}</textarea></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">กฎระเบียบอื่นๆ</label><textarea id="ai-rules" class="w-full rounded-xl border border-gray-200 p-2 text-sm" placeholder="เช่น ห้ามเลี้ยงสัตว์...">${app.aiContext.rules || ''}</textarea></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 text-purple-500">ข้อมูลอื่นๆ (Optional)</label><textarea id="ai-others" class="w-full rounded-xl border border-purple-200 p-2 text-sm bg-purple-50/30" placeholder="ข้อมูลเพิ่มเติมที่อยากให้ AI รู้...">${app.aiContext.others || ''}</textarea></div></div>
+                        </div>`,
+                    showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', focusConfirm: false,
                     didOpen: () => {
                         window.previewAIIcon = (input) => {
                             if (input.files && input.files[0]) {
                                 const reader = new FileReader();
-                                reader.onload = (e) => {
-                                    document.getElementById('ai-icon-preview').src = e.target.result;
-                                    document.getElementById('ai-icon-base64').value = e.target.result; 
-                                }
+                                reader.onload = (e) => { document.getElementById('ai-icon-preview').src = e.target.result; document.getElementById('ai-icon-base64').value = e.target.result; }
                                 reader.readAsDataURL(input.files[0]);
                             }
                         }
                     },
                     preConfirm: () => {
-                        return {
-                            botName: document.getElementById('ai-name').value,
-                            botIcon: document.getElementById('ai-icon-base64').value,
-                            terms: document.getElementById('ai-terms').value,
-                            appointment: document.getElementById('ai-appointment').value,
-                            nearby: document.getElementById('ai-nearby').value,
-                            rules: document.getElementById('ai-rules').value,
-                            others: document.getElementById('ai-others').value
-                        }
+                        return { botName: document.getElementById('ai-name').value, botIcon: document.getElementById('ai-icon-base64').value, terms: document.getElementById('ai-terms').value, appointment: document.getElementById('ai-appointment').value, nearby: document.getElementById('ai-nearby').value, rules: document.getElementById('ai-rules').value, others: document.getElementById('ai-others').value }
                     }
                 });
-                
                 if (formValues) {
-                    app.aiContext = formValues;
-                    app.saveAISettings();
+                    app.aiContext = formValues; app.saveAISettings();
                     Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, customClass: { popup: 'ultra-glass rounded-[32px]' } });
                 }
             },
@@ -611,112 +518,63 @@
                 const input = document.getElementById("chatInput");
                 const text = input.value.trim();
                 if(!text) return;
-                
-                // Add User Message
                 const messagesDiv = document.getElementById("chatMessages");
                 messagesDiv.innerHTML += `<div class="message user">${text}</div>`;
                 input.value = "";
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                
-                // Add Typing Indicator
                 const loadingId = "typing-" + Date.now();
                 messagesDiv.innerHTML += `<div class="message ai typing-indicator" id="${loadingId}"><span></span><span></span><span></span></div>`;
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 
-                // --- 1. เตรียมข้อมูลห้องให้ AI รู้จัก (Knowledge Base) ---
                 const availableRooms = app.data.filter(r => r.status === 'Post').map(r => {
                     return `- Unit ${r.unit}: ${r.type}, ชั้น ${r.floor}, ${r.size}ตรม., ราคา ${r.price} (${r.saleType}), จุดเด่น: ${r.description || '-'}`;
                 }).join("\n");
+                const botName = app.aiContext.botName || "น้อง Condolist";
+                const contextPrompt = `บทบาท: คุณคือ "${botName}" สุดยอดเซลล์ขายคอนโด... ข้อมูลห้องว่าง: ${availableRooms} ... คำถาม: "${text}"`;
 
-                // --- 2. สร้าง Prompt สุดฉลาด (Smart Salesperson Persona) ---
-                const botName = app.aiContext.botName || "น้อง Condolist"; // Use configured name
-                const contextPrompt = `
-                    บทบาท: คุณคือ "${botName}" สุดยอดเซลล์ขายคอนโดที่เก่งที่สุด เป็นกันเอง และช่วยเหลือลูกค้าได้จริง
-                    
-                    ข้อมูลห้องว่างที่เรามีขาย/เช่า (Inventory):
-                    ${availableRooms}
-                    
-                    ข้อมูลกฎระเบียบ/สัญญา (Policy):
-                    - เงื่อนไขสัญญา: ${app.aiContext.terms || "ตามตกลง"}
-                    - การนัดหมาย: ${app.aiContext.appointment || "ติดต่อแอดมิน"}
-                    - ทำเล: ${app.aiContext.nearby || "ทำเลเมือง เดินทางสะดวก"}
-                    - กฎระเบียบ: ${app.aiContext.rules || "-"}
-                    - ข้อมูลอื่นๆ เพิ่มเติม: ${app.aiContext.others || "-"}
-                    
-                    คำถามจากลูกค้า: "${text}"
-                    
-                    คำแนะนำในการตอบ:
-                    1. ถ้าลูกค้าถามหาห้อง ให้ค้นหาจาก "Inventory" ด้านบน แล้วแนะนำห้องที่ตรงกับความต้องการที่สุด (ถ้ามีหลายห้องให้แนะนำ 2-3 ห้อง)
-                    2. บอกรายละเอียดห้องที่แนะนำให้น่าสนใจ (เช่น "ขอแนะนำห้อง A เลยค่ะ ชั้นสูง วิวสวย ราคาอยู่ในงบ")
-                    3. ถ้าไม่มีห้องที่ตรง ให้แนะนำห้องที่ใกล้เคียงอย่างสุภาพ
-                    4. ตอบคำถามเรื่องสัญญา/ทำเล จากข้อมูล "Policy"
-                    5. ใช้ภาษาไทยที่สละสลวย มี Emoji บ้างให้ดูเป็นมิตร 
-                    6. แทนตัวเองว่า "${botName}" หรือ "น้อง"
-                    
-                    ตอบกลับลูกค้า:
-                `;
-
-                // Logic สำหรับ Backend Relay
-                if (GAS_API_URL.includes("placeholder")) {
-                     setTimeout(() => {
-                        document.getElementById(loadingId).remove();
-                        messagesDiv.innerHTML += `<div class="message ai">ระบบจำลอง (Mock): ได้รับข้อความ "${text}" แล้วครับ (กรุณาเชื่อมต่อ Backend เพื่อคุยกับ AI จริง)</div>`;
-                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                     }, 1000);
-                } else {
-                    // Real Backend AI Call (via Action: aiGenerate)
-                    try {
-                        const response = await fetch(GAS_API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "aiGenerate", prompt: contextPrompt })
-                        });
-                        const data = await response.json();
-                        document.getElementById(loadingId).remove();
-                        
-                        if (data.status === "success") {
-                             const formattedReply = data.text.replace(/\n/g, '<br>');
-                             messagesDiv.innerHTML += `<div class="message ai">${formattedReply}</div>`;
-                        } else {
-                             messagesDiv.innerHTML += `<div class="message ai text-red-500">AI ตอบกลับไม่ได้: ${data.message}</div>`;
-                        }
-                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                    } catch (e) {
-                        if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
-                        messagesDiv.innerHTML += `<div class="message ai text-red-500">เชื่อมต่อ Server ไม่ได้</div>`;
+                try {
+                    const response = await fetch(GAS_API_URL, {
+                        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ action: "aiGenerate", prompt: contextPrompt })
+                    });
+                    const data = await response.json();
+                    document.getElementById(loadingId).remove();
+                    if(data.status === 'success') {
+                        messagesDiv.innerHTML += `<div class="message ai">${data.text.replace(/\n/g, '<br>')}</div>`;
+                    } else {
+                        messagesDiv.innerHTML += `<div class="message ai text-red-500">AI ตอบไม่ได้: ${data.message}</div>`;
                     }
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                } catch (e) {
+                    if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+                    messagesDiv.innerHTML += `<div class="message ai text-red-500">เกิดข้อผิดพลาดในการเชื่อมต่อ</div>`;
                 }
             },
 
             openDetail: (item) => {
                 app.currentProperty = item;
-                
                 if (app.isAdmin) {
                     const modal = document.getElementById("adminDetailModal");
                     const images = JSON.parse(item.images || "[]");
                     const thumb = images.length > 0 ? images[0] : "https://via.placeholder.com/150?text=No+Image";
-                    
-                    const cleanUnit = item.unit.replace(/\(Both\)/gi, '').replace(/\(both\)/gi, '').trim();
-                    document.getElementById("adminModalTitle").innerText = "ห้อง " + cleanUnit;
-                    
+                    document.getElementById("adminModalTitle").innerText = "ห้อง " + item.unit.replace(/\(Both\)/gi, '').replace(/\(both\)/gi, '').trim();
                     const statusEl = document.getElementById("adminModalStatus");
                     statusEl.innerText = item.status;
                     statusEl.className = "text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide ";
                     if(item.status === 'Post') statusEl.classList.add('bg-green-100', 'text-green-600');
                     else if(item.status === 'Draft') statusEl.classList.add('bg-yellow-100', 'text-yellow-600');
                     else statusEl.classList.add('bg-red-100', 'text-red-600');
-                    
                     document.getElementById("adminModalThumb").src = thumb;
                     document.getElementById("adminModalPrice").innerText = "฿" + item.price;
                     document.getElementById("adminModalType").innerText = item.type;
                     document.getElementById("adminModalSize").innerText = item.size + " ตร.ม.";
                     document.getElementById("adminModalFloor").innerText = item.floor;
                     document.getElementById("adminModalTime").innerText = new Date(item.timestamp).toLocaleDateString('th-TH');
-
+                    
                     const setupBtn = (btnId, contractsJson, label) => {
                         const btn = document.getElementById(btnId);
                         let files = [];
                         try { files = JSON.parse(contractsJson || "[]"); } catch(e) { if(contractsJson) files = [contractsJson]; }
-                        
                         if (files.length > 0) {
                             btn.disabled = false;
                             const countBadge = files.length > 1 ? ` <span class="bg-blue-100 text-blue-600 px-1.5 rounded-full text-xs ml-1">${files.length}</span>` : '';
@@ -728,10 +586,9 @@
                             btn.classList.remove('text-green-700', 'bg-green-50');
                         }
                     };
-                    
                     setupBtn("btnOwnerContract", item.contractOwner, "สัญญาเจ้าของ");
                     setupBtn("btnTenantContract", item.contractTenant, "สัญญาผู้เช่า");
-
+                    
                     if (item.status === 'Rented') {
                         document.getElementById("adminRentedSection").classList.remove("hidden");
                         document.getElementById("adminRentStart").innerText = item.rentedStart || "-";
@@ -740,37 +597,27 @@
                         document.getElementById("adminRentedSection").classList.add("hidden");
                     }
                     modal.classList.remove("hidden");
-
                 } else {
                     const modal = document.getElementById("detailModal");
                     const images = JSON.parse(item.images || "[]");
-                    
                     document.getElementById("modalType").innerText = item.type;
                     document.getElementById("modalDesc").innerText = item.description || "ไม่มีรายละเอียดเพิ่มเติม";
-
                     const modalPriceEl = document.getElementById("modalPrice");
                     if (item.saleType === 'Both' && item.price.includes('/')) {
                          const parts = item.price.split('/');
-                         modalPriceEl.innerHTML = `
-                            <div class="flex flex-col items-end">
-                                <span class="text-blue-600 font-bold text-lg">฿${parts[0].trim()} <span class="text-xs text-gray-400 font-normal">/เช่า</span></span>
-                                <span class="text-pink-600 font-bold text-lg">฿${parts[1].trim()} <span class="text-xs text-gray-400 font-normal">/ขาย</span></span>
-                            </div>`;
+                         modalPriceEl.innerHTML = `<div class="flex flex-col items-end"><span class="text-blue-600 font-bold text-lg">฿${parts[0].trim()} <span class="text-xs text-gray-400 font-normal">/เช่า</span></span><span class="text-pink-600 font-bold text-lg">฿${parts[1].trim()} <span class="text-xs text-gray-400 font-normal">/ขาย</span></span></div>`;
                     } else {
                          const label = item.saleType === 'Rent' ? '/เดือน' : '';
                          if(item.price === 'Free') modalPriceEl.innerHTML = `<span class="text-green-500 font-bold text-2xl">ฟรี</span>`;
                          else modalPriceEl.innerHTML = `<span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-pink-600">฿${item.price}<span class="text-sm text-gray-400 font-normal ml-1">${label}</span></span>`;
                     }
-
                     const cleanUnit = item.unit.replace(/\(Both\)/gi, '').replace(/\(both\)/gi, '').trim();
                     document.getElementById("modalUnit").innerText = cleanUnit;
                     document.getElementById("modalFloor").innerText = item.floor;
                     document.getElementById("modalSize").innerText = item.size;
-
                     app.currentImageIndex = 0;
                     app.currentImages = images.length > 0 ? images : ["https://via.placeholder.com/500?text=No+Image"];
                     app.updateSlide();
-                    
                     modal.classList.remove("hidden");
                 }
             },
@@ -782,29 +629,18 @@
                 let jsonStr = (type === 'owner') ? item.contractOwner : item.contractTenant;
                 let files = [];
                 try { files = JSON.parse(jsonStr || "[]"); } catch(e) { if(jsonStr) files = [jsonStr]; }
-
                 if (files.length === 0) return;
-
-                if (files.length === 1) {
-                    window.open(files[0], '_blank');
-                } else {
+                if (files.length === 1) { window.open(files[0], '_blank'); } 
+                else {
                     const { value: selectedUrl } = await Swal.fire({
                         title: `เลือกไฟล์${type === 'owner' ? 'สัญญาเจ้าของ' : 'สัญญาผู้เช่า'}`,
                         input: 'radio',
-                        inputOptions: files.reduce((acc, url, index) => {
-                            acc[url] = `ฉบับที่ ${index + 1} (ดูไฟล์)`;
-                            return acc;
-                        }, {}),
+                        inputOptions: files.reduce((acc, url, index) => { acc[url] = `ฉบับที่ ${index + 1} (ดูไฟล์)`; return acc; }, {}),
                         inputValue: files[files.length-1], 
                         customClass: { popup: 'ultra-glass rounded-[32px]' },
-                        confirmButtonText: 'เปิดไฟล์',
-                        showCancelButton: true,
-                        cancelButtonText: 'ปิด'
+                        confirmButtonText: 'เปิดไฟล์', showCancelButton: true, cancelButtonText: 'ปิด'
                     });
-
-                    if (selectedUrl) {
-                        window.open(selectedUrl, '_blank');
-                    }
+                    if (selectedUrl) window.open(selectedUrl, '_blank');
                 }
             },
 
@@ -821,785 +657,200 @@
             },
 
             contactLine: () => { window.open(app.settings.lineUrl, '_blank'); },
+            toggleLoading: (show) => { const el = document.getElementById("loadingOverlay"); if(show) el.classList.remove("hidden"); else el.classList.add("hidden"); },
 
-            toggleLoading: (show) => {
-                const el = document.getElementById("loadingOverlay");
-                if(show) el.classList.remove("hidden");
-                else el.classList.add("hidden");
-            },
-
-            // --- ADMIN ---
             showLogin: async () => {
                 const { value: password } = await Swal.fire({
                     title: '<span class="gradient-text text-2xl">เข้าสู่ระบบแอดมิน</span>',
-                    customClass: {
-                        popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl p-0 pb-6',
-                        title: 'pt-8', 
-                        confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4 text-base',
-                        cancelButton: 'bg-white/50 text-gray-500 hover:text-gray-700 px-6 py-3 rounded-xl border-0 w-full mt-2 text-sm',
-                        actions: 'flex flex-col w-full px-8 pb-4 gap-0', 
-                        htmlContainer: '!overflow-visible px-8 m-0' 
-                    },
+                    customClass: { popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl p-0 pb-6', title: 'pt-8', confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4 text-base', cancelButton: 'bg-white/50 text-gray-500 hover:text-gray-700 px-6 py-3 rounded-xl border-0 w-full mt-2 text-sm', actions: 'flex flex-col w-full px-8 pb-4 gap-0', htmlContainer: '!overflow-visible px-8 m-0' },
                     buttonsStyling: false,
-                    html: `
-                        <div class="flex flex-col items-center gap-4 mt-2 mb-2">
-                            <!-- Animated Lock Icon -->
-                            <div class="relative w-24 h-24 mb-2">
-                                <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
-                                <div class="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-inner border border-white/20">
-                                    <i class="fas fa-lock text-4xl text-white drop-shadow-md"></i>
-                                </div>
-                                <div class="absolute top-0 right-0 w-6 h-6 bg-white/30 rounded-full blur-[2px]"></div>
-                            </div>
-                            
-                            <p class="text-sm text-gray-500 font-light text-center leading-relaxed">
-                                พื้นที่สำหรับผู้ดูแลระบบ<br>กรุณาระบุรหัสผ่านเพื่อดำเนินการต่อ
-                            </p>
-                            
-                            <div class="relative w-full group">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-key text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
-                                </div>
-                                <input id="swal-password" type="password" 
-                                    class="w-full rounded-2xl border-0 bg-white/60 p-4 pl-11 shadow-inner text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all outline-none text-center tracking-widest text-lg" 
-                                    placeholder="••••">
-                            </div>
-                        </div>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'ยืนยัน',
-                    cancelButtonText: 'ยกเลิก',
-                    focusConfirm: false,
-                    didOpen: () => {
-                        // Auto focus input
-                        const input = document.getElementById('swal-password');
-                        if(input) {
-                            input.focus();
-                            // Allow Enter key to submit
-                            input.addEventListener('keyup', (event) => {
-                                if (event.key === 'Enter') {
-                                    Swal.clickConfirm();
-                                }
-                            });
-                        }
-                    },
-                    preConfirm: () => {
-                        return document.getElementById('swal-password').value;
-                    }
+                    html: `<div class="flex flex-col items-center gap-4 mt-2 mb-2"><div class="relative w-24 h-24 mb-2"><div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div><div class="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-inner border border-white/20"><i class="fas fa-lock text-4xl text-white drop-shadow-md"></i></div><div class="absolute top-0 right-0 w-6 h-6 bg-white/30 rounded-full blur-[2px]"></div></div><p class="text-sm text-gray-500 font-light text-center leading-relaxed">พื้นที่สำหรับผู้ดูแลระบบ<br>กรุณาระบุรหัสผ่านเพื่อดำเนินการต่อ</p><div class="relative w-full group"><div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-key text-gray-400 group-focus-within:text-blue-500 transition-colors"></i></div><input id="swal-password" type="password" class="w-full rounded-2xl border-0 bg-white/60 p-4 pl-11 shadow-inner text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all outline-none text-center tracking-widest text-lg" placeholder="••••"></div></div>`,
+                    showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ยกเลิก', focusConfirm: false,
+                    didOpen: () => { const input = document.getElementById('swal-password'); if(input) { input.focus(); input.addEventListener('keyup', (event) => { if (event.key === 'Enter') Swal.clickConfirm(); }); } },
+                    preConfirm: () => { return document.getElementById('swal-password').value; }
                 });
 
                 if (password) {
                     app.toggleLoading(true);
-                    
-                    if(GAS_API_URL.includes("placeholder")) {
-                         await new Promise(r => setTimeout(r, 800));
-                         if(password === "1234") {
-                            app.isAdmin = true;
-                            localStorage.setItem('condolist_is_admin', 'true');
-                            app.toggleAdminView(true);
-                            Swal.fire({ 
-                                icon: 'success', 
-                                title: 'ยินดีต้อนรับ', 
-                                timer: 1500, 
-                                showConfirmButton: false,
-                                customClass: { popup: 'ultra-glass rounded-[32px]' }
-                            });
-                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'รหัสผ่านผิด',
-                                text: 'กรุณาลองใหม่อีกครั้ง',
-                                customClass: { popup: 'ultra-glass rounded-[32px]', confirmButton: 'ios-btn px-6 py-2 rounded-xl' }
-                            });
-                         }
-                         app.toggleLoading(false);
-                         return;
-                    }
-                    
                     try {
-                        const res = await fetch(GAS_API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'login', password: password })
-                        });
-                        
-                        const text = await res.text();
-                        let json;
-                        try {
-                            json = JSON.parse(text);
-                        } catch(e) {
-                            throw new Error("Server returned non-JSON response: " + text.substring(0, 50));
-                        }
-                        
-                        if (json.status === "success") {
-                            app.isAdmin = true;
-                            localStorage.setItem('condolist_is_admin', 'true');
-                            app.toggleAdminView(true);
-                            Swal.fire({ 
-                                icon: 'success', 
-                                title: 'ยินดีต้อนรับ', 
-                                timer: 1500, 
-                                showConfirmButton: false,
-                                customClass: { popup: 'ultra-glass rounded-[32px]' }
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                text: json.message || 'รหัสผ่านไม่ถูกต้อง หรือยังไม่ได้ Run Setup',
-                                customClass: { popup: 'ultra-glass rounded-[32px]' }
-                            });
-                        }
-                    } catch(e) {
-                         console.error(e);
-                         Swal.fire({
-                             icon: 'error',
-                             title: 'เกิดข้อผิดพลาด',
-                             text: 'เชื่อมต่อ Server ไม่ได้: ' + e.message,
-                             footer: 'เช็ค URL / สิทธิ์การเข้าถึง / Run Setup',
-                             customClass: { popup: 'ultra-glass rounded-[32px]' }
-                         });
-                    }
-                    app.toggleLoading(false);
+                        const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', password: password }) });
+                        const json = await res.json();
+                        app.toggleLoading(false);
+                        if (json.status === "success") { app.isAdmin = true; localStorage.setItem('condolist_is_admin', 'true'); app.toggleAdminView(true); Swal.fire({ icon: 'success', title: 'ยินดีต้อนรับ', timer: 1500, showConfirmButton: false, customClass: { popup: 'ultra-glass rounded-[32px]' } }); } 
+                        else { Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: 'รหัสผ่านไม่ถูกต้อง', customClass: { popup: 'ultra-glass rounded-[32px]' } }); }
+                    } catch(e) { app.toggleLoading(false); Swal.fire("Error", "Login Error: " + e.message, "error"); }
                 }
             },
-
-            logout: () => {
-                app.isAdmin = false;
-                localStorage.removeItem('condolist_is_admin');
-                app.toggleAdminView(false);
-                app.toggleMenu();
-            },
-
+            logout: () => { app.isAdmin = false; localStorage.removeItem('condolist_is_admin'); app.toggleAdminView(false); app.toggleMenu(); },
             toggleAdminView: (showAdmin) => {
-                const publicView = document.getElementById("publicView");
-                const adminDashboard = document.getElementById("adminDashboard");
-                if(showAdmin) {
-                    publicView.classList.add("hidden");
-                    adminDashboard.classList.remove("hidden");
-                    app.renderAdminList(app.data);
-                } else {
-                    publicView.classList.remove("hidden");
-                    adminDashboard.classList.add("hidden");
-                    app.renderGrid(app.data);
-                }
-                const nav = document.getElementById("navDropdown");
-                nav.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => nav.classList.add('hidden'), 200);
+                const publicView = document.getElementById("publicView"); const adminDashboard = document.getElementById("adminDashboard");
+                if(showAdmin) { publicView.classList.add("hidden"); adminDashboard.classList.remove("hidden"); app.renderAdminList(app.data); } 
+                else { publicView.classList.remove("hidden"); adminDashboard.classList.add("hidden"); app.renderGrid(app.data); }
+                const nav = document.getElementById("navDropdown"); nav.classList.add('opacity-0', 'scale-95'); setTimeout(() => nav.classList.add('hidden'), 200);
             },
-
             renderAdminList: (items) => {
-                const container = document.getElementById("adminList");
-                container.innerHTML = "";
+                const container = document.getElementById("adminList"); container.innerHTML = "";
                 items.forEach(item => {
                     let statusColor = item.status === 'Post' ? 'border-green-400' : (item.status === 'Draft' ? 'border-yellow-400' : 'border-red-400');
-                    const el = document.createElement("div");
-                    el.className = `glass-card p-4 flex justify-between items-center cursor-pointer border-l-4 ${statusColor} hover:bg-white/80 transition`;
-                    el.onclick = () => app.openDetail(item);
-                    el.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs">${item.unit.substring(0,3)}</div>
-                            <div>
-                                <div class="font-bold text-gray-800 text-lg leading-tight">${item.unit}</div>
-                                <div class="text-xs text-gray-500">${item.type} • ${item.floor}</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold text-blue-600">฿${item.price}</div>
-                            <div class="text-[10px] uppercase font-bold text-gray-400">${item.status}</div>
-                        </div>
-                    `;
+                    const el = document.createElement("div"); el.className = `glass-card p-4 flex justify-between items-center cursor-pointer border-l-4 ${statusColor} hover:bg-white/80 transition`; el.onclick = () => app.openDetail(item);
+                    el.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs">${item.unit.substring(0,3)}</div><div><div class="font-bold text-gray-800 text-lg leading-tight">${item.unit}</div><div class="text-xs text-gray-500">${item.type} • ${item.floor}</div></div></div><div class="text-right"><div class="font-bold text-blue-600">฿${item.price}</div><div class="text-[10px] uppercase font-bold text-gray-400">${item.status}</div></div>`;
                     container.appendChild(el);
                 });
             },
-            
-            filterAdmin: (status) => {
-                let filtered = app.data;
-                if(status !== 'All') filtered = app.data.filter(i => i.status === status);
-                app.renderAdminList(filtered);
-            },
-
-            // --- FORM (Styling only) ---
-            showAddRoom: () => {
-                document.getElementById("propertyForm").reset();
-                document.getElementById("formTitle").innerText = "เพิ่มห้องใหม่";
-                document.getElementById("inputId").value = "";
-                document.getElementById("imagePreview").innerHTML = "";
-                document.getElementById("existingOwnerContracts").innerHTML = "";
-                document.getElementById("existingTenantContracts").innerHTML = "";
-                app.currentFiles = { images: [], owner: [], tenant: [] };
-                
-                document.getElementById("btnDeleteProperty").classList.add("hidden");
-                document.getElementById("formModal").classList.remove("hidden");
-                document.getElementById("rentedFields").classList.add("hidden");
-                app.toggleMenu();
-            },
-
+            filterAdmin: (status) => { let filtered = app.data; if(status !== 'All') filtered = app.data.filter(i => i.status === status); app.renderAdminList(filtered); },
+            showAddRoom: () => { document.getElementById("propertyForm").reset(); document.getElementById("formTitle").innerText = "เพิ่มห้องใหม่"; document.getElementById("inputId").value = ""; document.getElementById("imagePreview").innerHTML = ""; document.getElementById("existingOwnerContracts").innerHTML = ""; document.getElementById("existingTenantContracts").innerHTML = ""; app.currentFiles = { images: [], owner: [], tenant: [] }; document.getElementById("btnDeleteProperty").classList.add("hidden"); document.getElementById("formModal").classList.remove("hidden"); document.getElementById("rentedFields").classList.add("hidden"); app.toggleMenu(); },
             editCurrentProperty: () => {
-                const item = app.currentProperty;
-                document.getElementById("adminDetailModal").classList.add("hidden");
-                document.getElementById("formModal").classList.remove("hidden");
-                document.getElementById("formTitle").innerText = "แก้ไขข้อมูล";
-                document.getElementById("btnDeleteProperty").classList.remove("hidden");
-                
-                document.getElementById("inputId").value = item.id;
-                document.getElementById("inputStatus").value = item.status;
-                document.getElementById("inputType").value = item.type;
-                document.getElementById("inputUnit").value = item.unit;
-                document.getElementById("inputFloor").value = item.floor;
-                document.getElementById("inputSize").value = item.size;
-                document.getElementById("inputSaleType").value = item.saleType;
-                document.getElementById("inputPrice").value = item.price;
-                document.getElementById("inputDesc").value = item.description || "";
-                
+                const item = app.currentProperty; document.getElementById("adminDetailModal").classList.add("hidden"); document.getElementById("formModal").classList.remove("hidden"); document.getElementById("formTitle").innerText = "แก้ไขข้อมูล"; document.getElementById("btnDeleteProperty").classList.remove("hidden");
+                document.getElementById("inputId").value = item.id; document.getElementById("inputStatus").value = item.status; document.getElementById("inputType").value = item.type; document.getElementById("inputUnit").value = item.unit; document.getElementById("inputFloor").value = item.floor; document.getElementById("inputSize").value = item.size; document.getElementById("inputSaleType").value = item.saleType; document.getElementById("inputPrice").value = item.price; document.getElementById("inputDesc").value = item.description || "";
                 app.handleStatusChange();
-                if(item.status === 'Rented') {
-                    if(item.rentedStart) document.getElementById("inputRentStart").value = new Date(item.rentedStart).toISOString().split('T')[0];
-                    if(item.rentedEnd) document.getElementById("inputRentEnd").value = new Date(item.rentedEnd).toISOString().split('T')[0];
-                }
-                
-                // --- POPULATE EXISTING FILES ---
+                if(item.status === 'Rented') { if(item.rentedStart) document.getElementById("inputRentStart").value = new Date(item.rentedStart).toISOString().split('T')[0]; if(item.rentedEnd) document.getElementById("inputRentEnd").value = new Date(item.rentedEnd).toISOString().split('T')[0]; }
                 app.currentFiles = { images: [], owner: [], tenant: [] };
-                
-                // Helper to render file chips
-                const renderChips = (jsonStr, containerId, typeKey) => {
-                    let files = [];
-                    try { files = JSON.parse(jsonStr || "[]"); } catch(e) { if(jsonStr) files = [jsonStr]; }
-                    app.currentFiles[typeKey] = files; // Store in state
-
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = "";
-                    files.forEach((url, index) => {
-                        const chip = document.createElement("div");
-                        chip.className = "flex items-center gap-2 bg-white border px-3 py-1 rounded-full text-xs shadow-sm";
-                        chip.innerHTML = `
-                            <a href="${url}" target="_blank" class="text-blue-600 hover:underline truncate max-w-[100px]">สัญญา ${index + 1}</a>
-                            <button type="button" onclick="app.removeFile('${typeKey}', ${index})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
-                        `;
-                        container.appendChild(chip);
-                    });
-                };
-
-                renderChips(item.contractOwner, "existingOwnerContracts", "owner");
-                renderChips(item.contractTenant, "existingTenantContracts", "tenant");
+                const renderChips = (jsonStr, containerId, typeKey) => { let files = []; try { files = JSON.parse(jsonStr || "[]"); } catch(e) { if(jsonStr) files = [jsonStr]; } app.currentFiles[typeKey] = files; const container = document.getElementById(containerId); container.innerHTML = ""; files.forEach((url, index) => { const chip = document.createElement("div"); chip.className = "flex items-center gap-2 bg-white border px-3 py-1 rounded-full text-xs shadow-sm"; chip.innerHTML = `<a href="${url}" target="_blank" class="text-blue-600 hover:underline truncate max-w-[100px]">สัญญา ${index + 1}</a><button type="button" onclick="app.removeFile('${typeKey}', ${index})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>`; container.appendChild(chip); }); };
+                renderChips(item.contractOwner, "existingOwnerContracts", "owner"); renderChips(item.contractTenant, "existingTenantContracts", "tenant");
             },
-
             removeFile: (type, index) => {
-                // Remove from state array
-                app.currentFiles[type].splice(index, 1);
-                // Re-render chips
-                const containerId = type === 'owner' ? "existingOwnerContracts" : "existingTenantContracts";
-                const container = document.getElementById(containerId);
-                container.innerHTML = "";
-                app.currentFiles[type].forEach((url, i) => {
-                    const chip = document.createElement("div");
-                    chip.className = "flex items-center gap-2 bg-white border px-3 py-1 rounded-full text-xs shadow-sm";
-                    chip.innerHTML = `
-                        <a href="${url}" target="_blank" class="text-blue-600 hover:underline truncate max-w-[100px]">สัญญา ${i + 1}</a>
-                        <button type="button" onclick="app.removeFile('${type}', ${i})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
-                    `;
-                    container.appendChild(chip);
-                });
+                app.currentFiles[type].splice(index, 1); const containerId = type === 'owner' ? "existingOwnerContracts" : "existingTenantContracts"; const container = document.getElementById(containerId); container.innerHTML = "";
+                app.currentFiles[type].forEach((url, i) => { const chip = document.createElement("div"); chip.className = "flex items-center gap-2 bg-white border px-3 py-1 rounded-full text-xs shadow-sm"; chip.innerHTML = `<a href="${url}" target="_blank" class="text-blue-600 hover:underline truncate max-w-[100px]">สัญญา ${i + 1}</a><button type="button" onclick="app.removeFile('${type}', ${i})" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>`; container.appendChild(chip); });
             },
-
-            handleStatusChange: () => {
-                const status = document.getElementById("inputStatus").value;
-                const rentedFields = document.getElementById("rentedFields");
-                if (status === "Rented") rentedFields.classList.remove("hidden");
-                else rentedFields.classList.add("hidden");
-            },
-            
-            handleTypeChange: () => {
-                 const type = document.getElementById("inputType").value;
-                 if(type === 'Facility') document.getElementById("inputPrice").value = "Free";
-            },
-
+            handleStatusChange: () => { const status = document.getElementById("inputStatus").value; const rentedFields = document.getElementById("rentedFields"); if (status === "Rented") rentedFields.classList.remove("hidden"); else rentedFields.classList.add("hidden"); },
+            handleTypeChange: () => { const type = document.getElementById("inputType").value; if(type === 'Facility') document.getElementById("inputPrice").value = "Free"; },
             closeForm: () => { document.getElementById("formModal").classList.add("hidden"); },
-
             submitProperty: async (e) => {
-                e.preventDefault();
-                app.toggleLoading(true);
+                e.preventDefault(); app.toggleLoading(true);
+                const getNewFilesBase64 = async (inputId) => { const input = document.getElementById(inputId); if (input.files.length > 0) return await Promise.all([...input.files].map(file => app.fileToBase64(file))); return []; };
+                const newOwnerFiles = await getNewFilesBase64('inputOwnerContract'); const newTenantFiles = await getNewFilesBase64('inputTenantContract'); const newImages = await getNewFilesBase64('inputImages');
+                const finalOwnerContracts = [...app.currentFiles.owner, ...newOwnerFiles]; const finalTenantContracts = [...app.currentFiles.tenant, ...newTenantFiles];
+                let finalImages = app.currentProperty ? JSON.parse(app.currentProperty.images || "[]") : []; if(document.getElementById("inputId").value === "") finalImages = []; finalImages = [...finalImages, ...newImages];
+                const payload = { id: document.getElementById("inputId").value || Date.now().toString(), status: document.getElementById("inputStatus").value, type: document.getElementById("inputType").value, unit: document.getElementById("inputUnit").value, floor: document.getElementById("inputFloor").value, size: document.getElementById("inputSize").value, saleType: document.getElementById("inputSaleType").value, price: document.getElementById("inputPrice").value, description: document.getElementById("inputDesc").value, images: finalImages, contractOwner: finalOwnerContracts, contractTenant: finalTenantContracts, rentedStart: document.getElementById("inputRentStart").value, rentedEnd: document.getElementById("inputRentEnd").value, timestamp: new Date().toISOString() };
                 
-                // --- HANDLE MULTIPLE FILES UPLOAD ---
-                // Function to process upload: Returns Promise that resolves to Array of Base64 strings
-                const getNewFilesBase64 = async (inputId) => {
-                    const input = document.getElementById(inputId);
-                    if (input.files.length > 0) {
-                        return await Promise.all([...input.files].map(file => app.fileToBase64(file)));
-                    }
-                    return [];
-                };
-
-                const newOwnerFiles = await getNewFilesBase64('inputOwnerContract');
-                const newTenantFiles = await getNewFilesBase64('inputTenantContract');
-                const newImages = await getNewFilesBase64('inputImages');
-
-                // Combine Old URLs + New Base64s
-                // Backend will distinguish: if starts with http -> keep, if base64 -> upload & replace
-                const finalOwnerContracts = [...app.currentFiles.owner, ...newOwnerFiles];
-                const finalTenantContracts = [...app.currentFiles.tenant, ...newTenantFiles];
-                
-                // For images, we handle similarly if needed, or just append
-                let finalImages = app.currentProperty ? JSON.parse(app.currentProperty.images || "[]") : [];
-                if(document.getElementById("inputId").value === "") finalImages = []; // Reset if new
-                finalImages = [...finalImages, ...newImages]; // Simplified appending for images (usually you want remove logic too but keeping simple)
-
-                // Real Logic...
-                const payload = {
-                    id: document.getElementById("inputId").value || Date.now().toString(),
-                    status: document.getElementById("inputStatus").value,
-                    type: document.getElementById("inputType").value,
-                    unit: document.getElementById("inputUnit").value,
-                    floor: document.getElementById("inputFloor").value,
-                    size: document.getElementById("inputSize").value,
-                    saleType: document.getElementById("inputSaleType").value,
-                    price: document.getElementById("inputPrice").value,
-                    description: document.getElementById("inputDesc").value,
-                    images: finalImages, // Send Array
-                    contractOwner: finalOwnerContracts, // Send Array
-                    contractTenant: finalTenantContracts, // Send Array
-                    rentedStart: document.getElementById("inputRentStart").value,
-                    rentedEnd: document.getElementById("inputRentEnd").value,
-                    timestamp: new Date().toISOString()
-                };
-                
-                if (GAS_API_URL.includes("placeholder")) {
-                    const existingIndex = app.data.findIndex(p => p.id === payload.id);
-                    if(existingIndex >= 0) app.data[existingIndex] = payload;
-                    else app.data.unshift(payload);
-                     app.closeForm();
-                     app.toggleLoading(false);
-                     if(app.isAdmin) app.renderAdminList(app.data);
-                     else app.renderGrid(app.data);
-                } else {
-                    // Send to backend
-                     const finalPayload = { ...payload, action: "saveProperty" };
-                     try {
-                        const res = await fetch(GAS_API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify(finalPayload)
-                        });
-                        const json = await res.json();
-                        if(json.status === "success") {
-                            await app.fetchData();
-                            app.closeForm();
-                            app.toggleLoading(false);
-                        } else { throw new Error(json.message); }
-                    } catch(e) { Swal.fire("Error", e.message, "error"); app.toggleLoading(false); }
-                }
+                // Add action field for backend routing
+                const finalPayload = { ...payload, action: "saveProperty" }; 
+                try { 
+                    const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(finalPayload) }); 
+                    const json = await res.json(); 
+                    if(json.status === "success") { 
+                        await app.fetchData(); app.closeForm(); 
+                    } else { throw new Error(json.message); } 
+                } catch(e) { Swal.fire("Error", e.message, "error"); } finally { app.toggleLoading(false); }
             },
-
-            deleteCurrentProperty: async () => {
-                // Delete logic
-                document.getElementById("formModal").classList.add("hidden");
-            },
-            
-            showSettings: async () => {
-                 app.toggleMenu();
-                 
-                 const { value: formValues } = await Swal.fire({
-                    title: '<span class="gradient-text text-2xl">ตั้งค่าโปรไฟล์</span>',
-                    customClass: {
-                        popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl',
-                        title: 'text-gray-800',
-                        confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4',
-                        cancelButton: 'bg-gray-100 text-gray-500 px-6 py-3 rounded-xl hover:bg-gray-200 border-0 w-full mt-2',
-                        actions: 'flex flex-col w-full px-6 pb-2 gap-0',
-                        htmlContainer: '!overflow-visible px-2' 
-                    },
-                    html: `
-                        <div class="text-left space-y-4 mt-2">
-                            <!-- Profile Image Preview -->
-                            <div class="flex justify-center mb-4">
-                                <div class="relative w-24 h-24">
-                                    <img src="${app.settings.profileImage || 'https://via.placeholder.com/150'}" id="setting-preview" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md">
-                                    <div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1.5 w-8 h-8 flex items-center justify-center shadow-sm border-2 border-white">
-                                        <i class="fas fa-camera text-xs"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ชื่อที่แสดง</label>
-                                <input id="swal-name" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 outline-none transition" placeholder="ชื่อ" value="${app.settings.profileName || ''}">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">รายละเอียด</label>
-                                <textarea id="swal-desc" rows="2" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 outline-none transition" placeholder="แนะนำตัวสั้นๆ...">${app.settings.profileDesc || ''}</textarea>
-                            </div>
-                            
-                            <!-- Hidden File Input triggered by logic -->
-                            <input type="file" id="swal-img-file" class="hidden" accept="image/*" onchange="previewProfileImage(this)">
-                            
-                            <!-- Trigger for File Upload -->
-                            <div class="p-3 bg-white/60 rounded-2xl border border-dashed border-gray-300 text-center cursor-pointer hover:bg-white/80 transition" onclick="document.getElementById('swal-img-file').click()">
-                                <p class="text-xs text-gray-500"><i class="fas fa-cloud-upload-alt mr-1"></i> เปลี่ยนรูปโปรไฟล์</p>
-                                <input id="swal-img-url" type="hidden" value="${app.settings.profileImage || ''}">
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">ลิงก์ Line</label>
-                                    <input id="swal-line" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-xs text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" value="${app.settings.lineUrl || ''}" placeholder="https://line.me/...">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">ลิงก์แผนที่</label>
-                                    <input id="swal-map" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-xs text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" value="${app.settings.mapUrl || ''}" placeholder="https://maps...">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">รหัสผ่านใหม่ (ไม่บังคับ)</label>
-                                <input id="swal-pass" type="password" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" placeholder="ปล่อยว่างไว้หากไม่เปลี่ยน">
-                            </div>
-                        </div>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'บันทึก',
-                    cancelButtonText: 'ยกเลิก',
-                    focusConfirm: false,
-                    didOpen: () => {
-                        window.previewProfileImage = (input) => {
-                            if (input.files && input.files[0]) {
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                    document.getElementById('setting-preview').src = e.target.result;
-                                    document.getElementById('swal-img-url').value = "(new_file_selected)";
-                                }
-                                reader.readAsDataURL(input.files[0]);
-                            }
-                        }
-                    },
-                    preConfirm: async () => {
-                        let profileImage = document.getElementById('swal-img-url').value;
-                        const fileInput = document.getElementById('swal-img-file');
-                        
-                        if (fileInput.files.length > 0) {
-                            try {
-                                profileImage = await app.fileToBase64(fileInput.files[0]);
-                            } catch (e) {
-                                Swal.showValidationMessage(`Upload failed: ${e}`);
-                            }
-                        }
-
-                        return {
-                            profileName: document.getElementById('swal-name').value,
-                            profileDesc: document.getElementById('swal-desc').value,
-                            profileImage: profileImage,
-                            lineUrl: document.getElementById('swal-line').value,
-                            mapUrl: document.getElementById('swal-map').value,
-                            adminPassword: document.getElementById('swal-pass').value
-                        }
-                    }
-                });
-
-                if (formValues) {
-                    app.toggleLoading(true);
-                    
-                     if(GAS_API_URL.includes("placeholder")) {
-                        await new Promise(r => setTimeout(r, 500));
-                        app.settings = { ...app.settings, ...formValues };
-                        if(formValues.profileImage && formValues.profileImage.startsWith('data:')) {
-                             app.settings.profileImage = formValues.profileImage;
-                        }
-                        app.applySettings();
-                        app.toggleLoading(false);
-                        Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, customClass: { popup: 'ultra-glass rounded-[32px]' } });
-                        return;
-                    }
-
-                    formValues.action = "saveSettings";
-                    if(!formValues.adminPassword) delete formValues.adminPassword;
-                    
-                    try {
-                        await fetch(GAS_API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify(formValues)
-                        });
-                        await app.fetchData();
-                        Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, customClass: { popup: 'ultra-glass rounded-[32px]' } });
-                    } catch(e) {
-                        Swal.fire("Error", "Failed to save", "error");
-                    }
-                    app.toggleLoading(false);
-                }
-            },
-
-            // --- PRINTING (KEEP EXACTLY SAME LAYOUT) ---
-            printPoster: () => {
-                const item = app.currentProperty;
-                const images = JSON.parse(item.images || "[]");
-                const agentName = app.settings.profileName || "Admin";
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(app.settings.lineUrl)}`;
-                
-                let imagesHtml = '';
-                const displayImages = images.length > 0 ? images : ["https://via.placeholder.com/600?text=No+Image"];
-                
-                for(let i=0; i<6; i++) {
-                    const src = displayImages[i] || displayImages[0]; 
-                    imagesHtml += `<div class="relative w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shadow-sm"><img src="${src}" class="absolute inset-0 w-full h-full object-cover"></div>`;
-                }
-
-                let priceHtml = '';
-                // Changed labels to Thai: Rent->เช่า, Sell->ขาย
-                const createPriceTag = (price, label) => `<div class="flex items-baseline justify-center gap-2"><span class="text-4xl font-extrabold text-pink-600">฿${price}</span><span class="text-xl text-gray-500 font-bold">(${label})</span></div>`;
-
-                if (item.saleType === 'Both' && item.price.includes('/')) {
-                     const parts = item.price.split('/');
-                     priceHtml = `<div class="flex flex-col items-center justify-center gap-1">${createPriceTag(parts[0].trim(), 'เช่า')}${createPriceTag(parts[1].trim(), 'ขาย')}</div>`;
-                } else {
-                     const label = item.saleType === 'Rent' ? 'เช่า' : (item.saleType === 'Sell' ? 'ขาย' : '');
-                     if(label) priceHtml = `<div class="flex flex-col items-center justify-center">${createPriceTag(item.price, label)}</div>`;
-                     else priceHtml = `<div class="flex flex-col items-center justify-center"><span class="text-5xl font-extrabold text-pink-600">฿${item.price}</span></div>`;
-                }
-
-                const cleanUnit = item.unit.replace(/\(Both\)/gi, '').replace(/\(both\)/gi, '').trim();
-                const printWindow = window.open('', '_blank', 'width=1123,height=794');
-                
-                const htmlContent = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Print Poster</title>
-                        <script src="https://cdn.tailwindcss.com"><\/script>
-                        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet"><style>@page { size: A4 landscape; margin: 0; } body { margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; height: 100%; }</style></head><body class="bg-white w-full h-screen flex flex-col overflow-hidden p-6 box-border"><div class="flex-1 w-full mb-4 min-h-0"><div class="image-grid">${imagesHtml}</div></div><div class="h-48 bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-row justify-between items-center shadow-sm shrink-0"><div class="w-1/3 border-r border-gray-300 pr-6 flex flex-col justify-center h-full">${priceHtml}<div class="mt-2 flex items-center justify-center gap-2"><span class="bg-gray-800 text-white text-xs px-2 py-1 rounded uppercase font-bold">ห้อง</span><span class="text-2xl font-bold text-gray-800">${cleanUnit}</span></div></div><div class="w-1/3 px-8 flex flex-col justify-center h-full"><div class="grid grid-cols-2 gap-y-4 gap-x-8 text-gray-800 w-full"><div><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ประเภท</span><span class="text-xl font-bold border-b-2 border-pink-100 inline-block">${item.type}</span></div><div><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ชั้น</span><span class="text-xl font-bold border-b-2 border-pink-100 inline-block">${item.floor}</span></div><div class="col-span-2"><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ขนาด</span><span class="text-3xl font-bold text-gray-900">${item.size} <small class="text-gray-500 text-base font-normal">ตร.ม.</small></span></div></div></div><div class="w-1/3 flex items-center justify-end gap-6 pl-6 border-l border-gray-300 h-full"><div class="text-right"><p class="text-[10px] text-pink-600 font-bold uppercase mb-1 tracking-widest">ติดต่อตัวแทน</p><h3 class="text-xl font-bold text-gray-900 leading-tight mb-1 truncate max-w-[180px]">${agentName}</h3><p class="text-[10px] text-gray-400 uppercase">สแกนเพื่อเพิ่มเพื่อน</p></div><div class="bg-white p-1.5 rounded-lg shadow-md border border-gray-100 shrink-0"><img src="${qrUrl}" class="w-24 h-24 object-contain"></div></div></div><script>setTimeout(() => { window.print(); }, 1000);<\/script></body></html>`;
-             printWindow.document.write(htmlContent); printWindow.document.close();
-        };
-
-        // --- GEMINI AI FEATURES ---
-        app.generateAIDescription = async () => {
-             const type = document.getElementById("inputType").value; const floor = document.getElementById("inputFloor").value || "-"; const size = document.getElementById("inputSize").value || "-"; const price = document.getElementById("inputPrice").value || "-"; const saleType = document.getElementById("inputSaleType").value;
-             const prompt = `เขียนคำบรรยายประกาศขาย/เช่าคอนโดให้น่าสนใจ สั้นกระชับ (ไม่เกิน 3 บรรทัด) ภาษาไทย. ข้อมูล: คอนโดแบบ ${type}, ชั้น ${floor}, ขนาด ${size} ตรม., ราคา ${price}, สำหรับ ${saleType}. เน้นจุดเด่นความน่าอยู่.`;
-             app.toggleLoading(true); 
-             if (GAS_API_URL.includes("placeholder")) {
-                setTimeout(() => {
-                    document.getElementById("inputDesc").value = "ตัวอย่างคำบรรยายจาก AI: คอนโดสวย ทำเลดี ราคาคุ้มค่า...";
-                    app.toggleLoading(false);
-                }, 1000);
-             } else {
-                 // Call Backend
+            deleteCurrentProperty: async () => { document.getElementById("formModal").classList.add("hidden"); },
+            showSettings: async () => { /* ... (Same as previous, omitted for brevity but present in logic) ... */ app.toggleMenu(); Swal.fire("Info", "Settings module loaded", "info"); }, // Simplified placeholder to avoid length, real one is complex
+            printPoster: () => { /* ... (Same as previous) ... */ },
+            generateAIDescription: async () => { 
+                 const type = document.getElementById("inputType").value; const floor = document.getElementById("inputFloor").value || "-"; const size = document.getElementById("inputSize").value || "-"; const price = document.getElementById("inputPrice").value || "-"; const saleType = document.getElementById("inputSaleType").value;
+                 const prompt = `เขียนคำบรรยายประกาศขาย/เช่าคอนโดให้น่าสนใจ สั้นกระชับ (ไม่เกิน 3 บรรทัด) ภาษาไทย. ข้อมูล: คอนโดแบบ ${type}, ชั้น ${floor}, ขนาด ${size} ตรม., ราคา ${price}, สำหรับ ${saleType}. เน้นจุดเด่นความน่าอยู่.`;
+                 app.toggleLoading(true);
                  try {
                      const response = await fetch(GAS_API_URL, {
                          method: "POST",
                          body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
                      });
                      const data = await response.json();
-                     if (data.status === 'success') {
-                        document.getElementById("inputDesc").value = data.text.trim();
-                     } else {
-                        throw new Error(data.message);
-                     }
-                 } catch (e) {
-                     Swal.fire("AI Error", "เชื่อมต่อ AI ไม่สำเร็จ: " + e.message, "error");
-                 }
-                 app.toggleLoading(false);
-             }
+                     if (data.status === 'success') document.getElementById("inputDesc").value = data.text.trim();
+                     else throw new Error(data.message);
+                 } catch (e) { Swal.fire("AI Error", "เชื่อมต่อ AI ไม่สำเร็จ: " + e.message, "error"); }
+                 finally { app.toggleLoading(false); }
+            },
+            summarizePropertyAI: async () => { /* ... (Similar logic with try-finally) ... */ },
+            translatePublicDescription: async () => { /* ... (Similar logic with try-finally) ... */ },
+            translateDescription: async () => { /* ... (Similar logic with try-finally) ... */ },
+            askAI: async () => { /* ... (Similar logic with try-finally) ... */ },
+            fileToBase64: (file) => { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); },
+            goHome: () => { app.isAdmin ? app.toggleAdminView(true) : app.toggleAdminView(false); }
+        };
+        // Re-inject complex methods to ensure they exist
+        app.showSettings = async () => {
+             app.toggleMenu();
+             const { value: formValues } = await Swal.fire({
+                title: '<span class="gradient-text text-2xl">ตั้งค่าโปรไฟล์</span>',
+                customClass: { popup: 'ultra-glass rounded-[32px] border border-white/50 backdrop-blur-xl', title: 'text-gray-800', confirmButton: 'ios-btn px-6 py-3 rounded-xl shadow-lg border-0 w-full mt-4', cancelButton: 'bg-gray-100 text-gray-500 px-6 py-3 rounded-xl hover:bg-gray-200 border-0 w-full mt-2', actions: 'flex flex-col w-full px-6 pb-2 gap-0', htmlContainer: '!overflow-visible px-2' },
+                html: `<div class="text-left space-y-4 mt-2"><div class="flex justify-center mb-4"><div class="relative w-24 h-24"><img src="${app.settings.profileImage || 'https://via.placeholder.com/150'}" id="setting-preview" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"><div class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1.5 w-8 h-8 flex items-center justify-center shadow-sm border-2 border-white"><i class="fas fa-camera text-xs"></i></div></div></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ชื่อที่แสดง</label><input id="swal-name" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 outline-none transition" placeholder="ชื่อ" value="${app.settings.profileName || ''}"></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">รายละเอียด</label><textarea id="swal-desc" rows="2" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 outline-none transition" placeholder="แนะนำตัวสั้นๆ...">${app.settings.profileDesc || ''}</textarea></div><input type="file" id="swal-img-file" class="hidden" accept="image/*" onchange="previewProfileImage(this)"><div class="p-3 bg-white/60 rounded-2xl border border-dashed border-gray-300 text-center cursor-pointer hover:bg-white/80 transition" onclick="document.getElementById('swal-img-file').click()"><p class="text-xs text-gray-500"><i class="fas fa-cloud-upload-alt mr-1"></i> เปลี่ยนรูปโปรไฟล์</p><input id="swal-img-url" type="hidden" value="${app.settings.profileImage || ''}"></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ลิงก์ Line</label><input id="swal-line" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-xs text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" value="${app.settings.lineUrl || ''}" placeholder="https://line.me/..."></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">ลิงก์แผนที่</label><input id="swal-map" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-xs text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" value="${app.settings.mapUrl || ''}" placeholder="https://maps..."></div></div><div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">รหัสผ่านใหม่ (ไม่บังคับ)</label><input id="swal-pass" type="password" class="w-full rounded-2xl border-0 bg-white/60 p-3.5 shadow-sm text-gray-800 focus:ring-2 focus:ring-blue-500/50 outline-none" placeholder="ปล่อยว่างไว้หากไม่เปลี่ยน"></div></div>`,
+                showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก', focusConfirm: false,
+                didOpen: () => { window.previewProfileImage = (input) => { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('setting-preview').src = e.target.result; document.getElementById('swal-img-url').value = "(new_file_selected)"; }; reader.readAsDataURL(input.files[0]); } } },
+                preConfirm: async () => { let profileImage = document.getElementById('swal-img-url').value; const fileInput = document.getElementById('swal-img-file'); if (fileInput.files.length > 0) { try { profileImage = await app.fileToBase64(fileInput.files[0]); } catch (e) { Swal.showValidationMessage(`Upload failed: ${e}`); } } return { profileName: document.getElementById('swal-name').value, profileDesc: document.getElementById('swal-desc').value, profileImage: profileImage, lineUrl: document.getElementById('swal-line').value, mapUrl: document.getElementById('swal-map').value, adminPassword: document.getElementById('swal-pass').value } }
+            });
+            if (formValues) {
+                app.toggleLoading(true);
+                formValues.action = "saveSettings"; if(!formValues.adminPassword) delete formValues.adminPassword;
+                try { await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(formValues) }); await app.fetchData(); Swal.fire({ icon: 'success', title: 'บันทึกเรียบร้อย', timer: 1500, showConfirmButton: false, customClass: { popup: 'ultra-glass rounded-[32px]' } }); } catch(e) { Swal.fire("Error", "Failed to save", "error"); } finally { app.toggleLoading(false); }
+            }
         };
 
-        // New Function: Summarize Property for Admin
+        app.printPoster = () => {
+             const item = app.currentProperty; const images = JSON.parse(item.images || "[]"); const agentName = app.settings.profileName || "Admin"; const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(app.settings.lineUrl)}`;
+             let imagesHtml = ''; const displayImages = images.length > 0 ? images : ["https://via.placeholder.com/600?text=No+Image"];
+             for(let i=0; i<6; i++) { const src = displayImages[i] || displayImages[0]; imagesHtml += `<div class="relative w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shadow-sm"><img src="${src}" class="absolute inset-0 w-full h-full object-cover"></div>`; }
+             let priceHtml = ''; const createPriceTag = (price, label) => `<div class="flex items-baseline justify-center gap-2"><span class="text-4xl font-extrabold text-pink-600">฿${price}</span><span class="text-xl text-gray-500 font-bold">(${label})</span></div>`;
+             if (item.saleType === 'Both' && item.price.includes('/')) { const parts = item.price.split('/'); priceHtml = `<div class="flex flex-col items-center justify-center gap-1">${createPriceTag(parts[0].trim(), 'เช่า')}${createPriceTag(parts[1].trim(), 'ขาย')}</div>`; } 
+             else { const label = item.saleType === 'Rent' ? 'เช่า' : (item.saleType === 'Sell' ? 'ขาย' : ''); if(label) priceHtml = `<div class="flex flex-col items-center justify-center">${createPriceTag(item.price, label)}</div>`; else priceHtml = `<div class="flex flex-col items-center justify-center"><span class="text-5xl font-extrabold text-pink-600">฿${item.price}</span></div>`; }
+             const cleanUnit = item.unit.replace(/\(Both\)/gi, '').replace(/\(both\)/gi, '').trim(); const printWindow = window.open('', '_blank', 'width=1123,height=794');
+             const htmlContent = `<!DOCTYPE html><html><head><title>Print Poster</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet"><style>@page { size: A4 landscape; margin: 0; } body { margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; height: 100%; }</style></head><body class="bg-white w-full h-screen flex flex-col overflow-hidden p-6 box-border"><div class="flex-1 w-full mb-4 min-h-0"><div class="image-grid">${imagesHtml}</div></div><div class="h-48 bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-row justify-between items-center shadow-sm shrink-0"><div class="w-1/3 border-r border-gray-300 pr-6 flex flex-col justify-center h-full">${priceHtml}<div class="mt-2 flex items-center justify-center gap-2"><span class="bg-gray-800 text-white text-xs px-2 py-1 rounded uppercase font-bold">ห้อง</span><span class="text-2xl font-bold text-gray-800">${cleanUnit}</span></div></div><div class="w-1/3 px-8 flex flex-col justify-center h-full"><div class="grid grid-cols-2 gap-y-4 gap-x-8 text-gray-800 w-full"><div><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ประเภท</span><span class="text-xl font-bold border-b-2 border-pink-100 inline-block">${item.type}</span></div><div><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ชั้น</span><span class="text-xl font-bold border-b-2 border-pink-100 inline-block">${item.floor}</span></div><div class="col-span-2"><span class="block text-[10px] text-gray-500 uppercase font-bold tracking-wider">ขนาด</span><span class="text-3xl font-bold text-gray-900">${item.size} <small class="text-gray-500 text-base font-normal">ตร.ม.</small></span></div></div></div><div class="w-1/3 flex items-center justify-end gap-6 pl-6 border-l border-gray-300 h-full"><div class="text-right"><p class="text-[10px] text-pink-600 font-bold uppercase mb-1 tracking-widest">ติดต่อตัวแทน</p><h3 class="text-xl font-bold text-gray-900 leading-tight mb-1 truncate max-w-[180px]">${agentName}</h3><p class="text-[10px] text-gray-400 uppercase">สแกนเพื่อเพิ่มเพื่อน</p></div><div class="bg-white p-1.5 rounded-lg shadow-md border border-gray-100 shrink-0"><img src="${qrUrl}" class="w-24 h-24 object-contain"></div></div></div><script>setTimeout(() => { window.print(); }, 1000);<\/script></body></html>`;
+             printWindow.document.write(htmlContent); printWindow.document.close();
+        };
+
+        app.generateAIDescription = async () => {
+             const type = document.getElementById("inputType").value; const floor = document.getElementById("inputFloor").value || "-"; const size = document.getElementById("inputSize").value || "-"; const price = document.getElementById("inputPrice").value || "-"; const saleType = document.getElementById("inputSaleType").value;
+             const prompt = `เขียนคำบรรยายประกาศขาย/เช่าคอนโดให้น่าสนใจ สั้นกระชับ (ไม่เกิน 3 บรรทัด) ภาษาไทย. ข้อมูล: คอนโดแบบ ${type}, ชั้น ${floor}, ขนาด ${size} ตรม., ราคา ${price}, สำหรับ ${saleType}. เน้นจุดเด่นความน่าอยู่.`;
+             app.toggleLoading(true); 
+             try {
+                 const response = await fetch(GAS_API_URL, {
+                     method: "POST",
+                     body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
+                 });
+                 const data = await response.json();
+                 if (data.status === 'success') document.getElementById("inputDesc").value = data.text.trim();
+                 else throw new Error(data.message);
+             } catch (e) { Swal.fire("AI Error", "เชื่อมต่อ AI ไม่สำเร็จ: " + e.message, "error"); }
+             finally { app.toggleLoading(false); }
+        };
         app.summarizePropertyAI = async () => {
-                const item = app.currentProperty;
-                const prompt = `ทำหน้าที่เป็นนายหน้าอสังหาฯ ช่วยสรุปข้อมูลห้องนี้เป็นข้อความสั้นๆ ภาษาไทย (ใส่ Emoji ให้น่าสนใจ) สำหรับส่งให้ลูกค้าทาง Line:
-                - ห้องเลขที่: ${item.unit}
-                - ประเภท: ${item.type}
-                - ชั้น: ${item.floor}
-                - ขนาด: ${item.size} ตรม.
-                - ราคา: ${item.price} (${item.saleType})
-                - สถานะ: ${item.status}
-                - รายละเอียดเพิ่มเติม: ${item.description || '-'}
-                
-                รูปแบบ:
-                🔥 ห้องหลุดจอง/ห้องสวย! [ชื่อห้อง]
-                🏢 ชั้น [ชั้น] ขนาด [ขนาด]
-                💰 ราคา [ราคา]
-                ...รายละเอียดจุดเด่น...
-                📍 สนใจทักแชทได้เลยครับ`;
-
-                app.toggleLoading(true);
-                
-                if (GAS_API_URL.includes("placeholder")) {
-                     setTimeout(() => {
-                        app.toggleLoading(false);
-                        Swal.fire({ title: 'AI Mock', text: 'ตัวอย่างสรุปข้อมูล...', icon: 'info' });
-                     }, 1000);
-                } else {
-                    try {
-                        const response = await fetch(GAS_API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
-                        });
-                        const data = await response.json();
-                        
-                        if (data.status === 'success') {
-                             const text = data.text;
-                             Swal.fire({
-                                title: '<span class="gradient-text">✨ AI สรุปรายการ</span>',
-                                html: `<div class="text-left text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-4 rounded-xl border border-gray-200">${text}</div>`,
-                                customClass: { popup: 'ultra-glass rounded-[32px]' },
-                                showCancelButton: true,
-                                cancelButtonText: 'ปิด',
-                                confirmButtonText: '<i class="far fa-copy"></i> คัดลอก',
-                                confirmButtonColor: '#007AFF',
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    navigator.clipboard.writeText(text);
-                                    const Toast = Swal.mixin({
-                                        toast: true,
-                                        position: 'top-end',
-                                        showConfirmButton: false,
-                                        timer: 3000,
-                                        timerProgressBar: true,
-                                        didOpen: (toast) => {
-                                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                                        }
-                                    })
-                                    Toast.fire({
-                                        icon: 'success',
-                                        title: 'คัดลอกเรียบร้อย!'
-                                    })
-                                }
-                            });
-                        } else {
-                             throw new Error(data.message);
-                        }
-                    } catch (e) {
-                        Swal.fire("AI Error", "เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
-                    }
-                    app.toggleLoading(false);
-                }
+             const item = app.currentProperty; const prompt = `ทำหน้าที่เป็นนายหน้าอสังหาฯ ช่วยสรุปข้อมูลห้องนี้เป็นข้อความสั้นๆ ภาษาไทย (ใส่ Emoji ให้น่าสนใจ) สำหรับส่งให้ลูกค้าทาง Line:\n- ห้องเลขที่: ${item.unit}\n- ประเภท: ${item.type}\n- ชั้น: ${item.floor}\n- ขนาด: ${item.size} ตรม.\n- ราคา: ${item.price} (${item.saleType})\n- สถานะ: ${item.status}\n- รายละเอียดเพิ่มเติม: ${item.description || '-'}\n\nรูปแบบ:\n🔥 ห้องหลุดจอง/ห้องสวย! [ชื่อห้อง]\n🏢 ชั้น [ชั้น] ขนาด [ขนาด]\n💰 ราคา [ราคา]\n...รายละเอียดจุดเด่น...\n📍 สนใจทักแชทได้เลยครับ`;
+             app.toggleLoading(true); 
+             try {
+                 const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "aiGenerate", prompt: prompt }) });
+                 const data = await response.json();
+                 if(data.status === 'success') {
+                     Swal.fire({ title: '<span class="gradient-text">✨ AI สรุปรายการ</span>', html: `<div class="text-left text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-4 rounded-xl border border-gray-200">${data.text}</div>`, customClass: { popup: 'ultra-glass rounded-[32px]' }, showCancelButton: true, cancelButtonText: 'ปิด', confirmButtonText: '<i class="far fa-copy"></i> คัดลอก', confirmButtonColor: '#007AFF', }).then((result) => { if (result.isConfirmed) { navigator.clipboard.writeText(data.text); const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } }); Toast.fire({ icon: 'success', title: 'คัดลอกเรียบร้อย!' }); } });
+                 } else throw new Error(data.message);
+             } catch (e) { Swal.fire("AI Error", "เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); } 
+             finally { app.toggleLoading(false); }
         };
-
         app.translatePublicDescription = async () => {
-                const descElement = document.getElementById("modalDesc");
-                const currentText = app.currentProperty.description || "";
-                
-                if (!currentText || currentText === "ไม่มีรายละเอียดเพิ่มเติม") {
-                    Swal.fire("Info", "ไม่มีเนื้อหาให้แปล", "info");
-                    return;
-                }
-
-                // Check if already translated
-                if (descElement.innerText.includes("[English Version]")) return;
-
-                app.toggleLoading(true);
-                
-                if (GAS_API_URL.includes("placeholder")) {
-                     setTimeout(() => {
-                        descElement.innerHTML += "<br><br>[English Version]<br>Mock translation...";
-                        app.toggleLoading(false);
-                     }, 1000);
-                } else {
-                    try {
-                        const prompt = `Translate this real estate description to professional and attractive English: "${currentText}"`;
-                        
-                        const response = await fetch(GAS_API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
-                        });
-                        const data = await response.json();
-                        
-                        if (data.status === 'success') {
-                             const translatedText = data.text;
-                             descElement.innerHTML = `${currentText}<br><br><span class="text-blue-600 font-bold text-xs">[English Version]</span><br>${translatedText.replace(/\n/g, '<br>')}`;
-                        } else {
-                             throw new Error(data.message);
-                        }
-                    } catch (e) {
-                        Swal.fire("Error", "Translation failed", "error");
-                    }
-                    app.toggleLoading(false);
-                }
+             const descElement = document.getElementById("modalDesc"); const currentText = app.currentProperty.description || ""; if (!currentText || currentText === "ไม่มีรายละเอียดเพิ่มเติม") { Swal.fire("Info", "ไม่มีเนื้อหาให้แปล", "info"); return; } if (descElement.innerText.includes("[English Version]")) return;
+             app.toggleLoading(true); 
+             try { 
+                 const prompt = `Translate this real estate description to professional and attractive English: "${currentText}"`; 
+                 const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "aiGenerate", prompt: prompt }) });
+                 const data = await response.json();
+                 if(data.status === 'success') {
+                     descElement.innerHTML = `${currentText}<br><br><span class="text-blue-600 font-bold text-xs">[English Version]</span><br>${data.text.replace(/\n/g, '<br>')}`; 
+                 } else throw new Error(data.message);
+             } catch (e) { Swal.fire("Error", "Translation failed", "error"); } 
+             finally { app.toggleLoading(false); }
         };
-
         app.translateDescription = async () => {
-                const currentText = document.getElementById("inputDesc").value;
-                if (!currentText) {
-                    Swal.fire("แจ้งเตือน", "กรุณาใส่ข้อความรายละเอียดก่อนแปล", "warning");
-                    return;
-                }
-
-                const prompt = `Translate the following real estate description into professional, attractive English for property listing: "${currentText}"`;
-
-                app.toggleLoading(true);
-                
-                if (GAS_API_URL.includes("placeholder")) {
-                     setTimeout(() => {
-                        document.getElementById("inputDesc").value += "\n\n[English] Mock Translation";
-                        app.toggleLoading(false);
-                     }, 1000);
-                } else {
-                    try {
-                        const response = await fetch(GAS_API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
-                        });
-                        const data = await response.json();
-                        
-                        if (data.status === 'success') {
-                            const text = data.text;
-                            // ต่อท้ายข้อความเดิม
-                            const textarea = document.getElementById("inputDesc");
-                            textarea.value = textarea.value + "\n\n[English Version]\n" + text.trim();
-                            textarea.scrollTop = textarea.scrollHeight; // Scroll to bottom
-                        } else {
-                             throw new Error(data.message);
-                        }
-                    } catch (e) {
-                        Swal.fire("AI Error", "ไม่สามารถแปลภาษาได้", "error");
-                    }
-                    app.toggleLoading(false);
-                }
+             const currentText = document.getElementById("inputDesc").value; if (!currentText) { Swal.fire("แจ้งเตือน", "กรุณาใส่ข้อความรายละเอียดก่อนแปล", "warning"); return; }
+             const prompt = `Translate the following real estate description into professional, attractive English for property listing: "${currentText}"`; app.toggleLoading(true); 
+             try { 
+                 const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "aiGenerate", prompt: prompt }) });
+                 const data = await response.json();
+                 if(data.status === 'success') {
+                     const textarea = document.getElementById("inputDesc"); textarea.value = textarea.value + "\n\n[English Version]\n" + data.text.trim(); textarea.scrollTop = textarea.scrollHeight; 
+                 } else throw new Error(data.message);
+             } catch (e) { Swal.fire("AI Error", "ไม่สามารถแปลภาษาได้", "error"); } 
+             finally { app.toggleLoading(false); }
         };
-        
         app.askAI = async () => {
-                // Mock logic for demo purposes if backend not connected
-                const item = app.currentProperty;
-                const prompt = `วิเคราะห์จุดเด่นของห้องนี้สั้นๆ 3 ข้อ แบบมี Emoji. ข้อมูล: คอนโด ${item.type}, ชั้น ${item.floor}, ขนาด ${item.size} ตรม., ราคา ${item.price}, รายละเอียด: ${item.description || "ไม่มีข้อมูลเพิ่มเติม"}`;
-                
-                app.toggleLoading(true);
-                
-                if (GAS_API_URL.includes("placeholder")) {
-                     setTimeout(() => {
-                        Swal.fire({ title: 'AI Mock', text: 'จุดเด่น 1... 2... 3...', icon: 'info' });
-                        app.toggleLoading(false);
-                     }, 1000);
-                } else {
-                    try {
-                        const response = await fetch(GAS_API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "aiGenerate", prompt: prompt })
-                        });
-                        const data = await response.json();
-                        
-                        if (data.status === 'success') {
-                            const text = data.text;
-                            Swal.fire({
-                                title: '✨ AI Analysis',
-                                html: `<div class="text-left text-gray-700 leading-relaxed">${text.replace(/\n/g, '<br>')}</div>`,
-                                customClass: { popup: 'ultra-glass rounded-[32px]' },
-                                confirmButtonText: 'เยี่ยมเลย!',
-                                confirmButtonColor: '#8B5CF6'
-                            });
-                        } else {
-                             throw new Error(data.message);
-                        }
-                    } catch (e) {
-                        Swal.fire("AI Error", "เกิดข้อผิดพลาด", "error");
-                    }
-                    app.toggleLoading(false);
-                }
-        };
-
-        app.fileToBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = error => reject(error);
-                });
-        };
-            
-        app.goHome = () => {
-                app.isAdmin ? app.toggleAdminView(true) : app.toggleAdminView(false);
+             const item = app.currentProperty; const prompt = `วิเคราะห์จุดเด่นของห้องนี้สั้นๆ 3 ข้อ แบบมี Emoji. ข้อมูล: คอนโด ${item.type}, ชั้น ${item.floor}, ขนาด ${item.size} ตรม., ราคา ${item.price}, รายละเอียด: ${item.description || "ไม่มีข้อมูลเพิ่มเติม"}`;
+             app.toggleLoading(true); 
+             try { 
+                 const response = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "aiGenerate", prompt: prompt }) });
+                 const data = await response.json();
+                 if(data.status === 'success') {
+                     Swal.fire({ title: '✨ AI Analysis', html: `<div class="text-left text-gray-700 leading-relaxed">${data.text.replace(/\n/g, '<br>')}</div>`, customClass: { popup: 'ultra-glass rounded-[32px]' }, confirmButtonText: 'เยี่ยมเลย!', confirmButtonColor: '#8B5CF6' }); 
+                 } else throw new Error(data.message);
+             } catch (e) { Swal.fire("AI Error", "เกิดข้อผิดพลาด", "error"); } 
+             finally { app.toggleLoading(false); }
         };
 
         document.addEventListener('DOMContentLoaded', app.init);
